@@ -55,11 +55,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+    apiKey: 'AIzaSyDfAsoApc4oiBRceExkJHgf9lHTWfvqYjQ',
+    appId: '1:734092155956:android:911e4f8addac8e50a1fe61',
+    messagingSenderId: '734092155956',
     projectId: 'event-sphere-f3f91',
-    storageBucket: 'event-sphere-f3f91.appspot.com',
+    storageBucket: 'event-sphere-f3f91.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -80,4 +80,3 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.eventSphere',
   );
 }
-
