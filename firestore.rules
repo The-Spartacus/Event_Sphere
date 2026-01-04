@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* =========================
+       Helper Functions
+    ========================= */
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return isLoggedIn() && userDoc().data.role;
+    }
+
+    function isStudent() {
+      return userRole() == 'student';
+    }
+
+    function isOrganization() {
+      return userRole() == 'organization';
+    }
+
+    function isAdmin() {
+      return userRole() == 'admin';
+    }
+
+    /* =========================
+       USERS
+    ========================= */
+    match /users/{userId} {
+      allow create: if isLoggedIn() && request.auth.uid == userId;
+      allow read: if isLoggedIn() && request.auth.uid == userId;
+      allow update: if isLoggedIn() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    /* =========================
+       ORGANIZATIONS
+    ========================= */
+    match /organizations/{orgId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn() && isOrganization();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    /* =========================
+       EVENTS
+    ========================= */
+    match /events/{eventId} {
+      // Students can read ONLY approved events
+      allow read: if isLoggedIn() &&
+        (
+          (isStudent() && resource.data.approved == true) ||
+          isOrganization() ||
+          isAdmin()
+        );
+
+      // Organizations create events
+      allow create: if isLoggedIn() && isOrganization();
+
+      // Organizations update ONLY their own events
+      allow update: if isLoggedIn() &&
+        (
+          (isOrganization() && resource.data.organizationId == request.auth.uid) ||
+          isAdmin()
+        );
+
+      // Delete only by admin
+      allow delete: if isAdmin();
+    }
+
+    /* =========================
+       REGISTRATIONS
+    ========================= */
+    match /registrations/{registrationId} {
+      // Students register themselves
+      allow create: if isLoggedIn() && isStudent() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Students read their registrations
+      allow read: if isLoggedIn() &&
+        (
+          (isStudent() && resource.data.userId == request.auth.uid) ||
+          isOrganization() ||
+          isAdmin()
+        );
+
+      allow update, delete: if false;
+    }
+
+    /* =========================
+       CERTIFICATES
+    ========================= */
+    match /certificates/{certificateId} {
+      // Students read ONLY their certificates
+      allow read: if isLoggedIn() &&
+        (
+          (isStudent() && resource.data.userId == request.auth.uid) ||
+          isOrganization() ||
+          isAdmin()
+        );
+
+      // Organizations upload certificates
+      allow create: if isLoggedIn() && isOrganization();
+
+      allow update, delete: if false;
+    }
+
+    /* =========================
+       CATEGORIES
+    ========================= */
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
