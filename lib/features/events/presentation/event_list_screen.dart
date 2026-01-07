@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/text_styles.dart';
-import '../../../core/theme/colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../app/routes.dart';
 import '../logic/event_controller.dart';
 import '../data/event_repository.dart';

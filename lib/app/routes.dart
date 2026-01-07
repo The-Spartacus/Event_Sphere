@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/auth/presentation/role_selection_screen.dart';
+import '../features/auth/presentation/splash_screen.dart';
+import '../features/auth/presentation/onboarding_screen.dart';
+
 
 // Student / Events
 import '../features/events/presentation/event_list_screen.dart';
@@ -25,6 +28,8 @@ import '../features/admin/analytics_screen.dart';
 
 class AppRoutes {
   // Route names
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
   static const String roleSelect = '/role-select';
@@ -45,6 +50,12 @@ class AppRoutes {
   // Route generator
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return _page(const SplashScreen());
+
+      case onboarding:
+        return _page(const OnboardingScreen());
+
       case login:
         return _page(const LoginScreen());
 

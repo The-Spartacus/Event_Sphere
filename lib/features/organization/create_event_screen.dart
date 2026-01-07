@@ -4,8 +4,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/auth_service.dart';
-import '../../core/theme/text_styles.dart';
-import '../../core/theme/colors.dart';
 import '../../app/app_config.dart';
 import '../events/data/event_model.dart';
 import '../events/logic/event_controller.dart';
@@ -126,11 +124,27 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     onPressed: () async {
                       if (!_formKey.currentState!.validate()) return;
 
+                      // 🔴 FIX 1: NEVER allow empty organizationId
+                      final uid = authService.currentUserId;
+                      if (uid == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('User not authenticated'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      // 🔍 DEBUG (temporary)
+                      debugPrint('DEBUG UID: $uid');
+
                       final event = EventModel(
                         id: const Uuid().v4(),
                         title: _titleController.text.trim(),
-                        organizationId:
-                            authService.currentUserId ?? '',
+
+                        // ✅ FIXED
+                        organizationId: uid,
+
                         organizationName: 'Organization',
                         category: _category,
                         locationType: _locationType,
@@ -141,9 +155,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         price: _price,
                         certificateProvided: _certificateProvided,
                         registrationLimit: null,
+
+                        // 🔒 REQUIRED BY RULES
                         approved: false,
                         createdAt: DateTime.now(),
                       );
+
+                      // 🔍 DEBUG (temporary)
+                      debugPrint(
+                          'DEBUG ORG ID IN EVENT: ${event.organizationId}');
+                      debugPrint(
+                          'DEBUG APPROVED: ${event.approved}');
 
                       await eventController.createEvent(event);
 

@@ -11,4 +11,6 @@ class StorageKeys {
   // Preferences
   static const String lastSelectedCategory = 'last_selected_category';
   static const String lastFilterLocation = 'last_filter_location';
+  static const String hasSeenOnboarding = 'has_seen_onboarding';
+
 }
