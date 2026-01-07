@@ -7,6 +7,11 @@ import '../logic/event_controller.dart';
 import '../data/event_repository.dart';
 import '../../../widgets/event_card.dart';
 
+import 'package:provider/provider.dart';
+import '../../../core/services/auth_service.dart';
+import '../../../app/routes.dart';
+
+
 class EventListScreen extends StatelessWidget {
   const EventListScreen({super.key});
 
@@ -23,6 +28,22 @@ class EventListScreen extends StatelessWidget {
           title: const Text('Events'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                final authService = context.read<AuthService>();
+
+                await authService.logout();
+
+                if (!context.mounted) return;
+
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (_) => false,
+                );
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.filter_list),
               onPressed: () {
                 Navigator.pushNamed(
@@ -33,6 +54,7 @@ class EventListScreen extends StatelessWidget {
             ),
           ],
         ),
+
         body: Consumer<EventController>(
           builder: (context, controller, _) {
             if (controller.isLoading) {

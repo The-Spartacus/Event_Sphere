@@ -7,7 +7,7 @@ import 'app/app.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/api_service.dart';
 
-// 🔴 ADD THESE IMPORTS
+// ADD THESE IMPORTS
 import 'features/events/logic/event_controller.dart';
 import 'features/events/data/event_repository.dart';
 
