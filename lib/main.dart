@@ -37,7 +37,6 @@ class EventSphereApp extends StatelessWidget {
           create: (_) => ApiService(),
         ),
 
-        // ✅ THIS IS THE FIX
         ChangeNotifierProvider<EventController>(
           create: (_) => EventController(EventRepository()),
         ),

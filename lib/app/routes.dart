@@ -9,6 +9,7 @@ import '../features/auth/presentation/onboarding_screen.dart';
 
 
 // Student / Events
+import '../features/student/student_home.dart';
 import '../features/events/presentation/event_list_screen.dart';
 import '../features/events/presentation/event_detail_screen.dart';
 import '../features/events/presentation/event_filter_screen.dart';
@@ -16,13 +17,14 @@ import '../features/events/presentation/event_filter_screen.dart';
 // Certificates
 import '../features/certificates/certificate_vault_screen.dart';
 
-// Organization
+// Organization 
+import '../features/organization/org_home.dart';
 import '../features/organization/org_dashboard_screen.dart';
 import '../features/organization/create_event_screen.dart';
 import '../features/organization/participants_screen.dart';
 
 // Admin
-import '../features/admin/admin_dashboard.dart';
+import '../features/admin/admin_home.dart';
 import '../features/admin/verify_org_screen.dart';
 import '../features/admin/analytics_screen.dart';
 
@@ -66,7 +68,8 @@ class AppRoutes {
         return _page(const RoleSelectionScreen());
 
       case studentHome:
-        return _page(const EventListScreen());
+        return _page(const StudentHome());
+
 
       case eventDetails:
         return _page(
@@ -80,7 +83,7 @@ class AppRoutes {
         return _page(const CertificateVaultScreen());
 
       case orgHome:
-        return _page(const OrgDashboardScreen());
+        return _page(const OrgHome());
 
       case createEvent:
         return _page(const CreateEventScreen());
@@ -91,7 +94,7 @@ class AppRoutes {
         );
 
       case adminHome:
-        return _page(const AdminDashboard());
+        return _page(const AdminHome());
 
       case verifyOrg:
         return _page(const VerifyOrgScreen());
@@ -112,7 +115,7 @@ class AppRoutes {
   static Widget loginWidget() => const LoginScreen();
   static Widget studentHomeWidget() => const EventListScreen();
   static Widget organizationHomeWidget() => const OrgDashboardScreen();
-  static Widget adminHomeWidget() => const AdminDashboard();
+  static Widget adminHomeWidget() => const AdminHome();
 
   // Private helper
   static MaterialPageRoute _page(Widget child) {
