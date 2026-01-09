@@ -97,6 +97,20 @@ class EventController extends ChangeNotifier {
     }
   }
 
+  /// Update existing event (organization, only unapproved events)
+  /// Security: Should be validated at repository/Firestore rules level
+  Future<void> updateEvent(EventModel event) async {
+    try {
+      _setLoading(true);
+      await _repository.updateEvent(event);
+      _setLoading(false);
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
   /// Delete event
   Future<void> deleteEvent(String eventId) async {
     try {

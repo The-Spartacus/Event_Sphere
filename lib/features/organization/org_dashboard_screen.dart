@@ -41,28 +41,21 @@ class OrgDashboardScreen extends StatelessWidget {
               style: AppTextStyles.headlineMedium,
             ),
             const SizedBox(height: 24),
-
+            _DashboardCard(
+              icon: Icons.event,
+              title: 'My Events',
+              description: 'View and manage your events',
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.orgEventsList);
+              },
+            ),
+            const SizedBox(height: 16),
             _DashboardCard(
               icon: Icons.add_circle_outline,
               title: 'Create Event',
               description: 'Publish a new academic event',
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.createEvent);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            _DashboardCard(
-              icon: Icons.list_alt,
-              title: 'View Participants',
-              description: 'See registered students',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                        Text('Select an event to view participants'),
-                  ),
-                );
               },
             ),
           ],
@@ -94,8 +87,7 @@ class _DashboardCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius:
-              BorderRadius.circular(AppConfig.borderRadius),
+          borderRadius: BorderRadius.circular(AppConfig.borderRadius),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(

@@ -71,11 +71,12 @@ class EventRepository {
         .delete();
   }
 
-  /// Filter events dynamically
+  /// Filter events dynamically with optional date filtering
   Stream<List<EventModel>> filterEvents({
     String? category,
     String? locationType,
     bool? isPaid,
+    DateTime? dateFilter,
   }) {
     Query<Map<String, dynamic>> query =
         _firestore.collection(ApiEndpoints.events)
@@ -92,11 +93,39 @@ class EventRepository {
     if (isPaid != null) {
       query = query.where('isPaid', isEqualTo: isPaid);
     }
+    
+    // Date filter: filter by date field (date only, not time)
+    if (dateFilter != null) {
+      final startOfDay = DateTime(dateFilter.year, dateFilter.month, dateFilter.day);
+      final endOfDay = DateTime(dateFilter.year, dateFilter.month, dateFilter.day, 23, 59, 59);
+      query = query
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay));
+    }
 
-    return query.snapshots().map(
+    return query.orderBy('date').snapshots().map(
           (snapshot) => snapshot.docs
               .map((doc) => EventModel.fromDoc(doc))
               .toList(),
         );
+  }
+  
+  /// Get participant count for an event
+  /// Returns a stream of the count of registrations for a given event
+  Stream<int> getParticipantCount(String eventId) {
+    return _firestore
+        .collection(ApiEndpoints.registrations)
+        .where('eventId', isEqualTo: eventId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+  
+  /// Get participant count as a future (for one-time reads)
+  Future<int> getParticipantCountFuture(String eventId) async {
+    final snapshot = await _firestore
+        .collection(ApiEndpoints.registrations)
+        .where('eventId', isEqualTo: eventId)
+        .get();
+    return snapshot.docs.length;
   }
 }

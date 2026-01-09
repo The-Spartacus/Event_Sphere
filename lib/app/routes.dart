@@ -7,7 +7,6 @@ import '../features/auth/presentation/role_selection_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/onboarding_screen.dart';
 
-
 // Student / Events
 import '../features/student/student_home.dart';
 import '../features/events/presentation/event_list_screen.dart';
@@ -17,10 +16,12 @@ import '../features/events/presentation/event_filter_screen.dart';
 // Certificates
 import '../features/certificates/certificate_vault_screen.dart';
 
-// Organization 
+// Organization
 import '../features/organization/org_home.dart';
 import '../features/organization/org_dashboard_screen.dart';
 import '../features/organization/create_event_screen.dart';
+import '../features/organization/org_events_list_screen.dart';
+import '../features/organization/edit_event_screen.dart';
 import '../features/organization/participants_screen.dart';
 
 // Admin
@@ -43,6 +44,8 @@ class AppRoutes {
 
   static const String orgHome = '/org/home';
   static const String createEvent = '/org/create-event';
+  static const String orgEventsList = '/org/events-list';
+  static const String editEvent = '/org/edit-event';
   static const String participants = '/org/participants';
 
   static const String adminHome = '/admin/home';
@@ -70,7 +73,6 @@ class AppRoutes {
       case studentHome:
         return _page(const StudentHome());
 
-
       case eventDetails:
         return _page(
           EventDetailScreen(eventId: settings.arguments as String),
@@ -87,6 +89,14 @@ class AppRoutes {
 
       case createEvent:
         return _page(const CreateEventScreen());
+
+      case orgEventsList:
+        return _page(const OrgEventsListScreen());
+
+      case editEvent:
+        return _page(
+          EditEventScreen(eventId: settings.arguments as String),
+        );
 
       case participants:
         return _page(
