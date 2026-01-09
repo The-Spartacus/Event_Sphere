@@ -16,9 +16,9 @@ class StudentHome extends StatefulWidget {
 class _StudentHomeState extends State<StudentHome> {
   int _index = 0;
 
-  final _pages = const [
-    EventListScreen(),
-    CertificateVaultScreen(),
+  final _pages = [
+    const EventListScreen(),
+    const CertificateVaultScreen(),
   ];
 
   @override
@@ -28,8 +28,11 @@ class _StudentHomeState extends State<StudentHome> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) {
-          if (i == 2) {
+          if (i == 3) {
             _logout(context);
+          } else if (i == 2) {
+            Navigator.pushNamed(context, AppRoutes.profile,
+                arguments: 'student');
           } else {
             setState(() => _index = i);
           }
@@ -42,6 +45,10 @@ class _StudentHomeState extends State<StudentHome> {
           BottomNavigationBarItem(
             icon: Icon(Icons.workspace_premium),
             label: 'Certificates',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout),

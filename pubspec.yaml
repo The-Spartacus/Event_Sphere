@@ -30,6 +30,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cupertino_icons: ^1.0.6
   url_launcher: ^6.3.1
+  image_picker: ^1.0.7
 
   # PDF Viewer (for certificates)
   syncfusion_flutter_pdfviewer: ^32.1.21

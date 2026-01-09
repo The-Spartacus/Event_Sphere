@@ -24,6 +24,10 @@ import '../features/organization/org_events_list_screen.dart';
 import '../features/organization/edit_event_screen.dart';
 import '../features/organization/participants_screen.dart';
 
+// Profile
+import '../features/profile/presentation/student_profile_screen.dart';
+import '../features/profile/presentation/organization_profile_screen.dart';
+
 // Admin
 import '../features/admin/admin_home.dart';
 import '../features/admin/verify_org_screen.dart';
@@ -41,6 +45,7 @@ class AppRoutes {
   static const String eventDetails = '/events/details';
   static const String eventFilter = '/events/filter';
   static const String certificates = '/certificates';
+  static const String profile = '/profile';
 
   static const String orgHome = '/org/home';
   static const String createEvent = '/org/create-event';
@@ -83,6 +88,14 @@ class AppRoutes {
 
       case certificates:
         return _page(const CertificateVaultScreen());
+
+      case profile:
+        // Route arguments should contain role ('student' or 'organization')
+        final role = settings.arguments as String?;
+        if (role == 'organization') {
+          return _page(const OrganizationProfileScreen());
+        }
+        return _page(const StudentProfileScreen());
 
       case orgHome:
         return _page(const OrgHome());

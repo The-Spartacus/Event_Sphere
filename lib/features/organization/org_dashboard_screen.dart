@@ -58,6 +58,16 @@ class OrgDashboardScreen extends StatelessWidget {
                 Navigator.pushNamed(context, AppRoutes.createEvent);
               },
             ),
+            const SizedBox(height: 16),
+            _DashboardCard(
+              icon: Icons.person,
+              title: 'Profile',
+              description: 'View and edit your organization profile',
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.profile,
+                    arguments: 'organization');
+              },
+            ),
           ],
         ),
       ),

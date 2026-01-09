@@ -31,12 +31,48 @@ service cloud.firestore {
     }
 
     /* =========================
-       USERS
+       USERS (PROFILE)
     ========================= */
     match /users/{userId} {
+      // Users can create their own profile during registration
       allow create: if isLoggedIn() && request.auth.uid == userId;
-      allow read: if isLoggedIn() && request.auth.uid == userId;
-      allow update: if isLoggedIn() && request.auth.uid == userId;
+      
+      // Users can read only their own profile (admin can read all)
+      allow read: if isLoggedIn() &&
+        (
+          request.auth.uid == userId ||
+          isAdmin()
+        );
+      
+      // Users can update only their own profile with field-level restrictions
+      // Note: update() operations only send changed fields, so we check if immutable fields are present
+      allow update: if isLoggedIn() && request.auth.uid == userId &&
+        // Prevent modification of immutable fields - if present in update, they must match existing values
+        (!('email' in request.resource.data) || request.resource.data.email == resource.data.email) &&
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+        (!('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt) &&
+        (!('verified' in request.resource.data) || request.resource.data.verified == resource.data.verified) &&
+        // Role-based field restrictions - students cannot modify org fields, orgs cannot modify student fields
+        (
+          (isStudent() && 
+            !('organizationName' in request.resource.data) &&
+            !('officialWebsite' in request.resource.data) &&
+            !('organizationDescription' in request.resource.data) &&
+            !('address' in request.resource.data) &&
+            !('contactPersonName' in request.resource.data) &&
+            !('contactPersonPhone' in request.resource.data) &&
+            !('logoUrl' in request.resource.data)
+          ) ||
+          (isOrganization() &&
+            !('collegeName' in request.resource.data) &&
+            !('department' in request.resource.data) &&
+            !('yearOfStudy' in request.resource.data) &&
+            !('profilePhotoUrl' in request.resource.data)
+          )
+        );
+      
+      // Admins can read but not modify through profile feature (they use separate admin tools)
+      // Delete not allowed for anyone
       allow delete: if false;
     }
 
