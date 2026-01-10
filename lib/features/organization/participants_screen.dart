@@ -45,12 +45,12 @@ class ParticipantsScreen extends StatelessWidget {
           }
 
           return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection(ApiEndpoints.registrations)
-                .where('eventId', isEqualTo: eventId)
+        stream: FirebaseFirestore.instance
+            .collection(ApiEndpoints.registrations)
+            .where('eventId', isEqualTo: eventId)
                 .orderBy('createdAt', descending: true)
-                .snapshots(),
-            builder: (context, snapshot) {
+            .snapshots(),
+        builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -72,8 +72,8 @@ class ParticipantsScreen extends StatelessWidget {
                 );
               }
 
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return Center(
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -84,18 +84,18 @@ class ParticipantsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No participants yet',
+                'No participants yet',
                         style: AppTextStyles.title,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Students who register will appear here',
-                        style: AppTextStyles.body,
+                style: AppTextStyles.body,
                       ),
                     ],
-                  ),
-                );
-              }
+              ),
+            );
+          }
 
               final registrations = snapshot.data!.docs;
               final dateFormat = DateFormat('MMM dd, yyyy • h:mm a');

@@ -93,7 +93,7 @@ class EventRepository {
     if (isPaid != null) {
       query = query.where('isPaid', isEqualTo: isPaid);
     }
-    
+
     // Date filter: filter by date field (date only, not time)
     if (dateFilter != null) {
       final startOfDay = DateTime(dateFilter.year, dateFilter.month, dateFilter.day);
