@@ -64,7 +64,11 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.public, size: 96, color: Colors.white),
+            Image.asset(
+              'assets/images/event_sphere.png',
+              width: 150,
+              height: 150,
+            ),
             const SizedBox(height: 16),
             Text(
               'Event Sphere',

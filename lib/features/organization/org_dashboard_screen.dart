@@ -16,7 +16,12 @@ class OrgDashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Organization Dashboard'),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset('assets/images/event_sphere.png'),
+        ),
+        title: const Text('Event Sphere'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

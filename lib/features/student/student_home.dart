@@ -37,6 +37,9 @@ class _StudentHomeState extends State<StudentHome> {
             setState(() => _index = i);
           }
         },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.event),

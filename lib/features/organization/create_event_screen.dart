@@ -354,7 +354,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         price: _price,
                         certificateProvided: _certificateProvided,
                         registrationLimit: null,
-                        approved: false,
+                        approved: true,
                         createdAt: DateTime.now(),
                       );
 
