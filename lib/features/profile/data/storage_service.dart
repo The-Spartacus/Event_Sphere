@@ -1,49 +1,37 @@
 import 'dart:io';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:uuid/uuid.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 
-/// Service for handling Firebase Storage operations
+/// Service for handling Cloudinary Storage operations
 /// Used for uploading profile photos and organization logos
 class StorageService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final Uuid _uuid = const Uuid();
+  // TODO: Replace with your actual Cloudinary credentials
+  final CloudinaryPublic _cloudinary = CloudinaryPublic(
+    'dcagxzjpu', 
+    'event_sphere', 
+    cache: false,
+  );
+
+  StorageService() {
+    print('StorageService initialized. Cloud: dcagxzjpu, Preset: event_sphere');
+  }
 
   /// Upload profile photo for a user
   /// Returns the download URL of the uploaded image
   Future<String> uploadProfilePhoto({
     required String userId,
     required File imageFile,
-    String? existingPhotoUrl, // If updating, delete old photo
+    String? existingPhotoUrl, // Cloudinary doesn't easily support delete by URL without public_id, so we mostly ignore this for now for unsigned
   }) async {
     try {
-      // Delete existing photo if updating
-      if (existingPhotoUrl != null && existingPhotoUrl.isNotEmpty) {
-        try {
-          await _storage.refFromURL(existingPhotoUrl).delete();
-        } catch (e) {
-          // Ignore errors when deleting old photo (might not exist)
-          print('Error deleting old photo: $e');
-        }
-      }
-
-      // Create unique filename
-      final fileName = 'profile_${_uuid.v4()}.jpg';
-      final ref = _storage
-          .ref()
-          .child('profiles')
-          .child(userId)
-          .child('photo')
-          .child(fileName);
-
-      // Upload file
-      final uploadTask = ref.putFile(imageFile);
-      final snapshot = await uploadTask;
-      
-      // Get download URL
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
+      CloudinaryResponse response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path, 
+          resourceType: CloudinaryResourceType.Image,
+        ),
+      );
+      return response.secureUrl;
     } catch (e) {
-      throw Exception('Failed to upload profile photo: $e');
+      throw Exception('Failed to upload profile photo to Cloudinary: $e');
     }
   }
 
@@ -52,47 +40,59 @@ class StorageService {
   Future<String> uploadOrganizationLogo({
     required String userId,
     required File imageFile,
-    String? existingLogoUrl, // If updating, delete old logo
+    String? existingLogoUrl,
   }) async {
     try {
-      // Delete existing logo if updating
-      if (existingLogoUrl != null && existingLogoUrl.isNotEmpty) {
-        try {
-          await _storage.refFromURL(existingLogoUrl).delete();
-        } catch (e) {
-          // Ignore errors when deleting old logo (might not exist)
-          print('Error deleting old logo: $e');
-        }
-      }
-
-      // Create unique filename
-      final fileName = 'logo_${_uuid.v4()}.jpg';
-      final ref = _storage
-          .ref()
-          .child('profiles')
-          .child(userId)
-          .child('logo')
-          .child(fileName);
-
-      // Upload file
-      final uploadTask = ref.putFile(imageFile);
-      final snapshot = await uploadTask;
-      
-      // Get download URL
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
+      CloudinaryResponse response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          resourceType: CloudinaryResourceType.Image,
+        ),
+      );
+      return response.secureUrl;
     } catch (e) {
-      throw Exception('Failed to upload organization logo: $e');
+      throw Exception('Failed to upload organization logo to Cloudinary: $e');
+    }
+  }
+
+  /// Upload event poster
+  /// Returns the download URL of the uploaded image
+  Future<String> uploadEventPoster({
+    required String eventId,
+    required File imageFile,
+    String? existingPosterUrl,
+  }) async {
+    try {
+      CloudinaryResponse response = await _cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+           imageFile.path,
+           resourceType: CloudinaryResourceType.Image,
+        ),
+      );
+      return response.secureUrl;
+    } on CloudinaryException catch (e) {
+      print('Cloudinary Error: ${e.message}');
+      print('Cloudinary Response: ${e.responseString}');
+      throw Exception('Cloudinary Upload Failed: ${e.message} - ${e.responseString}');
+    } catch (e) {
+      print('Unknown Error: $e');
+      try {
+        // Attempt to inspect DioException response if present
+        if ((e as dynamic).response != null) {
+          print('Cloudinary/Dio Response Data: ${(e as dynamic).response.data}');
+        }
+      } catch (_) {}
+      throw Exception('Failed to upload: $e');
     }
   }
 
   /// Delete a file from storage by URL
+  /// Note: Unsigned deletion is generally not supported for security reasons in client-side Cloudinary.
+  /// This is a stub to match the previous interface.
   Future<void> deleteFile(String fileUrl) async {
-    try {
-      await _storage.refFromURL(fileUrl).delete();
-    } catch (e) {
-      throw Exception('Failed to delete file: $e');
-    }
+    // Cloudinary client-side libraries typically don't allow delete for unsigned uploads
+    // We would need a backend signature to do this securey.
+    // For now, we will just log it.
+    print('StorageService.deleteFile: Deletion is not supported with unsigned Cloudinary presets. File URL: $fileUrl');
   }
 }
-

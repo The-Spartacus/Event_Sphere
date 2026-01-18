@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/services/auth_service.dart';
 import '../../app/routes.dart';
 import 'org_dashboard_screen.dart';
+import 'org_dashboard_screen.dart';
 import 'create_event_screen.dart';
+import '../profile/logic/profile_controller.dart';
 
 class OrgHome extends StatefulWidget {
   const OrgHome({super.key});
@@ -14,6 +16,17 @@ class OrgHome extends StatefulWidget {
 }
 
 class _OrgHomeState extends State<OrgHome> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authService = context.read<AuthService>();
+      final userId = authService.currentUserId;
+      if (userId != null) {
+        context.read<ProfileController>().loadProfile(userId);
+      }
+    });
+  }
   int _index = 0;
 
   final _pages = const [
@@ -28,11 +41,7 @@ class _OrgHomeState extends State<OrgHome> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) {
-          if (i == 2) {
-            _logout(context);
-          } else {
-            setState(() => _index = i);
-          }
+          setState(() => _index = i);
         },
         items: const [
           BottomNavigationBarItem(
@@ -42,10 +51,6 @@ class _OrgHomeState extends State<OrgHome> {
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle),
             label: 'Create',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.logout),
-            label: 'Logout',
           ),
         ],
       ),

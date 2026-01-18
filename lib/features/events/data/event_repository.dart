@@ -71,12 +71,14 @@ class EventRepository {
         .delete();
   }
 
-  /// Filter events dynamically with optional date filtering
+  /// Filter events dynamically with date ranges and organization name
   Stream<List<EventModel>> filterEvents({
     String? category,
     String? locationType,
     bool? isPaid,
-    DateTime? dateFilter,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? organizationNameQuery,
   }) {
     Query<Map<String, dynamic>> query =
         _firestore.collection(ApiEndpoints.events)
@@ -94,20 +96,27 @@ class EventRepository {
       query = query.where('isPaid', isEqualTo: isPaid);
     }
 
-    // Date filter: filter by date field (date only, not time)
-    if (dateFilter != null) {
-      final startOfDay = DateTime(dateFilter.year, dateFilter.month, dateFilter.day);
-      final endOfDay = DateTime(dateFilter.year, dateFilter.month, dateFilter.day, 23, 59, 59);
-      query = query
-          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay));
+    // Date range filtering
+    if (startDate != null) {
+      query = query.where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+    }
+    if (endDate != null) {
+      query = query.where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
     }
 
-    return query.orderBy('date').snapshots().map(
-          (snapshot) => snapshot.docs
-              .map((doc) => EventModel.fromDoc(doc))
-              .toList(),
-        );
+    return query.orderBy('date').snapshots().map((snapshot) {
+      var events = snapshot.docs.map((doc) => EventModel.fromDoc(doc)).toList();
+
+      // Client-side filtering for Organization Name (Firestore limitation on multiple inequalities)
+      if (organizationNameQuery != null && organizationNameQuery.isNotEmpty) {
+        final queryLower = organizationNameQuery.toLowerCase();
+        events = events.where((event) {
+          return event.organizationName.toLowerCase().contains(queryLower);
+        }).toList();
+      }
+
+      return events;
+    });
   }
   
   /// Get participant count for an event
@@ -127,5 +136,79 @@ class EventRepository {
         .where('eventId', isEqualTo: eventId)
         .get();
     return snapshot.docs.length;
+  }
+
+  /// Get events by a list of IDs (handles whereIn limit of 10)
+  Future<List<EventModel>> getEventsByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+
+    // Firestore whereIn is limited to 10 items
+    final List<EventModel> events = [];
+    final chunks = <List<String>>[];
+    for (var i = 0; i < ids.length; i += 10) {
+      chunks.add(ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10));
+    }
+
+    for (var chunk in chunks) {
+      final snapshot = await _firestore
+          .collection(ApiEndpoints.events)
+          .where(FieldPath.documentId, whereIn: chunk)
+          .get();
+      
+      events.addAll(
+        snapshot.docs.map((doc) => EventModel.fromDoc(doc)).toList(),
+      );
+    }
+    
+  // Sort logic could go here, or handled by caller.
+    return events;
+  }
+
+  /// Get list of event IDs that a user has registered for
+  Future<List<String>> getRegisteredEventIds(String userId) async {
+    final snapshot = await _firestore
+        .collection(ApiEndpoints.registrations)
+        .where('userId', isEqualTo: userId)
+        .get();
+    
+    return snapshot.docs.map((doc) => doc.data()['eventId'] as String).toList();
+  }
+
+  /// Get specific registration ID for a user and event
+  Future<String?> getRegistrationId(String userId, String eventId) async {
+    final snapshot = await _firestore
+        .collection(ApiEndpoints.registrations)
+        .where('userId', isEqualTo: userId)
+        .where('eventId', isEqualTo: eventId)
+        .limit(1)
+        .get();
+    
+    if (snapshot.docs.isEmpty) return null;
+    return snapshot.docs.first.id;
+  }
+
+  /// Check if user is registered
+  Future<bool> isUserRegistered(String userId, String eventId) async {
+    final regId = await getRegistrationId(userId, eventId);
+    return regId != null;
+  }
+
+  /// Get details of a specific registration
+  Future<Map<String, dynamic>?> getRegistrationDetails(String registrationId) async {
+    final doc = await _firestore
+        .collection(ApiEndpoints.registrations)
+        .doc(registrationId)
+        .get();
+    
+    if (!doc.exists) return null;
+    return doc.data();
+  }
+
+  /// Mark a registration as attended
+  Future<void> markAttendance(String registrationId) async {
+    await _firestore
+        .collection(ApiEndpoints.registrations)
+        .doc(registrationId)
+        .update({'attended': true});
   }
 }

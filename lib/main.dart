@@ -10,6 +10,10 @@ import 'core/services/api_service.dart';
 // ADD THESE IMPORTS
 import 'features/events/logic/event_controller.dart';
 import 'features/events/data/event_repository.dart';
+import 'features/profile/data/storage_service.dart';
+import 'features/profile/data/profile_repository.dart';
+import 'features/profile/logic/profile_controller.dart';
+import 'core/theme/theme_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +43,25 @@ class EventSphereApp extends StatelessWidget {
 
         ChangeNotifierProvider<EventController>(
           create: (_) => EventController(EventRepository()),
+        ),
+
+        Provider<StorageService>(
+          create: (_) => StorageService(),
+        ),
+
+        Provider<ProfileRepository>(
+          create: (_) => ProfileRepository(),
+        ),
+
+        ChangeNotifierProvider<ProfileController>(
+          create: (context) => ProfileController(
+            repository: context.read<ProfileRepository>(),
+            storageService: context.read<StorageService>(),
+          ),
+        ),
+
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
         ),
       ],
       child: const App(),

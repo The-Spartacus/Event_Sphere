@@ -149,6 +149,48 @@ class ProfileController extends ChangeNotifier {
     }
   }
 
+  /// Toggle subscription to an organization
+  void toggleSubscription(String organizationId) {
+    if (_profile == null) return;
+
+    final currentSubscriptions = List<String>.from(_profile!.subscribedOrgIds);
+    final currentTimestamps = Map<String, DateTime>.from(_profile!.subscriptionTimestamps);
+
+    if (currentSubscriptions.contains(organizationId)) {
+      currentSubscriptions.remove(organizationId);
+      currentTimestamps.remove(organizationId);
+    } else {
+      currentSubscriptions.add(organizationId);
+      currentTimestamps[organizationId] = DateTime.now();
+    }
+
+    _profile = _profile!.copyWith(
+      subscribedOrgIds: currentSubscriptions,
+      subscriptionTimestamps: currentTimestamps,
+    );
+    _hasChanges = true;
+    notifyListeners();
+  }
+
+  /// Toggle bookmark for an event
+  void toggleBookmark(String eventId) {
+    if (_profile == null) return;
+
+    final currentBookmarks = List<String>.from(_profile!.bookmarkedEventIds);
+    if (currentBookmarks.contains(eventId)) {
+      currentBookmarks.remove(eventId);
+    } else {
+      currentBookmarks.add(eventId);
+    }
+
+    _profile = _profile!.copyWith(bookmarkedEventIds: currentBookmarks);
+    _hasChanges = true;
+    
+    // Auto-save for interaction events
+    saveProfile(); // Assuming we want immediate persistence for UX
+    notifyListeners();
+  }
+
   /// Save profile changes to Firestore
   Future<void> saveProfile() async {
     if (_profile == null) {

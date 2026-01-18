@@ -12,6 +12,8 @@ import '../features/student/student_home.dart';
 import '../features/events/presentation/event_list_screen.dart';
 import '../features/events/presentation/event_detail_screen.dart';
 import '../features/events/presentation/event_filter_screen.dart';
+import '../features/events/data/event_model.dart';
+import '../features/tickets/presentation/ticket_screen.dart';
 
 // Certificates
 import '../features/certificates/certificate_vault_screen.dart';
@@ -23,6 +25,8 @@ import '../features/organization/create_event_screen.dart';
 import '../features/organization/org_events_list_screen.dart';
 import '../features/organization/edit_event_screen.dart';
 import '../features/organization/participants_screen.dart';
+import '../features/organization/scan_qr_screen.dart';
+import '../features/organization/public_org_profile_screen.dart';
 
 // Profile
 import '../features/profile/presentation/student_profile_screen.dart';
@@ -32,6 +36,7 @@ import '../features/profile/presentation/organization_profile_screen.dart';
 import '../features/admin/admin_home.dart';
 import '../features/admin/verify_org_screen.dart';
 import '../features/admin/analytics_screen.dart';
+import '../features/admin/create_admin_screen.dart';
 
 class AppRoutes {
   // Route names
@@ -46,16 +51,21 @@ class AppRoutes {
   static const String eventFilter = '/events/filter';
   static const String certificates = '/certificates';
   static const String profile = '/profile';
+  static const String ticket = '/ticket';
 
   static const String orgHome = '/org/home';
   static const String createEvent = '/org/create-event';
   static const String orgEventsList = '/org/events-list';
   static const String editEvent = '/org/edit-event';
   static const String participants = '/org/participants';
+  static const String scanQr = '/org/scan-qr';
+  static const String publicOrgProfile = '/student/org-profile';
+  static const String categoryEvents = '/events/category';
 
   static const String adminHome = '/admin/home';
   static const String verifyOrg = '/admin/verify-org';
   static const String analytics = '/admin/analytics';
+  static const String createAdmin = '/admin/create-admin';
 
   // Route generator
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -89,6 +99,11 @@ class AppRoutes {
       case certificates:
         return _page(const CertificateVaultScreen());
 
+      case ticket:
+        return _page(
+          TicketScreen(event: settings.arguments as EventModel),
+        );
+
       case profile:
         // Route arguments should contain role ('student' or 'organization')
         final role = settings.arguments as String?;
@@ -116,6 +131,21 @@ class AppRoutes {
           ParticipantsScreen(eventId: settings.arguments as String),
         );
 
+      case scanQr:
+        return _page(
+          ScanQrScreen(eventId: settings.arguments as String),
+        );
+
+      case publicOrgProfile:
+        return _page(
+          PublicOrgProfileScreen(organizationId: settings.arguments as String),
+        );
+
+      case categoryEvents:
+        return _page(
+          EventListScreen(initialCategory: settings.arguments as String?),
+        );
+
       case adminHome:
         return _page(const AdminHome());
 
@@ -124,6 +154,9 @@ class AppRoutes {
 
       case analytics:
         return _page(const AnalyticsScreen());
+
+      case createAdmin:
+        return _page(const CreateAdminScreen());
 
       default:
         return _page(

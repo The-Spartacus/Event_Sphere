@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import '../constants/api_endpoints.dart';
 import '../constants/app_constants.dart';
@@ -30,6 +31,7 @@ class AuthService {
       case AppConstants.roleOrganization:
         return AuthState.organization;
       case AppConstants.roleAdmin:
+      case AppConstants.roleSuperAdmin:
         return AuthState.admin;
       default:
         return AuthState.unauthenticated;
@@ -42,6 +44,17 @@ class AuthService {
     required String password,
     required String name,
     required String role,
+    // Optional fields
+    String? phoneNumber,
+    String? collegeName,
+    String? department,
+    String? yearOfStudy,
+    String? organizationName,
+    String? officialWebsite,
+    String? organizationDescription,
+    String? address,
+    String? contactPersonName,
+    String? contactPersonPhone,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -56,7 +69,72 @@ class AuthService {
       'email': email,
       'role': role,
       'createdAt': FieldValue.serverTimestamp(),
+      'phoneNumber': phoneNumber,
+      'collegeName': collegeName,
+      'department': department,
+      'yearOfStudy': yearOfStudy,
+      'organizationName': organizationName ?? (role == AppConstants.roleOrganization ? name : null),
+      'officialWebsite': officialWebsite,
+      'organizationDescription': organizationDescription,
+      'address': address,
+      'contactPersonName': contactPersonName,
+      'contactPersonPhone': contactPersonPhone,
     });
+
+    if (role == AppConstants.roleOrganization) {
+      await _firestore
+          .collection(ApiEndpoints.organizations)
+          .doc(credential.user!.uid)
+          .set({
+        'name': name,
+        'email': email,
+        'verified': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  /// Register new user without logging out the current user (Secondary App)
+  Future<void> registerSecondaryUser({
+    required String email,
+    required String password,
+    required String name,
+    required String role,
+  }) async {
+    FirebaseApp? secondaryApp;
+    try {
+      // 1. Initialize a secondary app
+      secondaryApp = await Firebase.initializeApp(
+        name: 'SecondaryApp',
+        options: Firebase.app().options,
+      );
+
+      // 2. Create user using the secondary app's auth instance
+      final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
+      final credential = await secondaryAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // 3. Save user details to Firestore (using the PRIMARY app's Firestore)
+      // We use the primary firestore because we want to write to the main DB.
+      await _firestore
+          .collection(ApiEndpoints.users)
+          .doc(credential.user!.uid)
+          .set({
+        'name': name,
+        'email': email,
+        'role': role,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // No organization logic needed here as this is primarily for admin creation
+      // but if needed we can add it. Assuming this is for Sub-Admins.
+
+    } finally {
+      // 4. Delete the secondary app to clean up
+      await secondaryApp?.delete();
+    }
   }
 
   /// Login user

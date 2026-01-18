@@ -19,6 +19,20 @@ class EventModel {
   final bool approved;
   final DateTime createdAt;
 
+  // New fields
+  final String? posterUrl;
+  final String? description;
+  final List<String>? keyFeatures;
+  final String? registrationLink;
+
+  
+  // Premium Features
+  final String? venue;
+  final String? googleMapsLink;
+  final DateTime? registrationDeadline;
+  final int views;
+  final List<String> interestedUserIds;
+
   EventModel({
     required this.id,
     required this.title,
@@ -37,6 +51,16 @@ class EventModel {
     this.registrationLimit,
     required this.approved,
     required this.createdAt,
+    this.posterUrl,
+    this.description,
+    this.keyFeatures,
+    this.registrationLink,
+
+    this.venue,
+    this.googleMapsLink,
+    this.registrationDeadline,
+    this.views = 0,
+    this.interestedUserIds = const [],
   });
 
   /// Create EventModel from Firestore document
@@ -94,6 +118,21 @@ class EventModel {
       registrationLimit: data['registrationLimit'],
       approved: data['approved'] ?? false,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      posterUrl: data['posterUrl'],
+      description: data['description'],
+      keyFeatures: data['keyFeatures'] != null
+          ? List<String>.from(data['keyFeatures'])
+          : null,
+      registrationLink: data['registrationLink'],
+      venue: data['venue'],
+      googleMapsLink: data['googleMapsLink'],
+      registrationDeadline: data['registrationDeadline'] != null
+          ? (data['registrationDeadline'] as Timestamp).toDate()
+          : null,
+      views: data['views'] ?? 0,
+      interestedUserIds: data['interestedUserIds'] != null
+          ? List<String>.from(data['interestedUserIds'])
+          : [],
     );
   }
 
@@ -117,6 +156,17 @@ class EventModel {
       'registrationLimit': registrationLimit,
       'approved': approved,
       'createdAt': Timestamp.fromDate(createdAt),
+      'posterUrl': posterUrl,
+      'description': description,
+      'keyFeatures': keyFeatures,
+      'registrationLink': registrationLink,
+      'venue': venue,
+      'googleMapsLink': googleMapsLink,
+      'registrationDeadline': registrationDeadline != null
+          ? Timestamp.fromDate(registrationDeadline!)
+          : null,
+      'views': views,
+      'interestedUserIds': interestedUserIds,
     };
   }
 
@@ -136,6 +186,16 @@ class EventModel {
     bool? certificateProvided,
     int? registrationLimit,
     bool? approved,
+    String? posterUrl,
+    String? description,
+    List<String>? keyFeatures,
+
+    String? registrationLink,
+    String? venue,
+    String? googleMapsLink,
+    DateTime? registrationDeadline,
+    int? views,
+    List<String>? interestedUserIds,
   }) {
     return EventModel(
       id: id,
@@ -157,6 +217,15 @@ class EventModel {
           registrationLimit ?? this.registrationLimit,
       approved: approved ?? this.approved, // Typically set by admin, but allowed for flexibility
       createdAt: createdAt, // Immutable: creation timestamp never changes
+      posterUrl: posterUrl ?? this.posterUrl,
+      description: description ?? this.description,
+      keyFeatures: keyFeatures ?? this.keyFeatures,
+      registrationLink: registrationLink ?? this.registrationLink,
+      venue: venue ?? this.venue,
+      googleMapsLink: googleMapsLink ?? this.googleMapsLink,
+      registrationDeadline: registrationDeadline ?? this.registrationDeadline,
+      views: views ?? this.views,
+      interestedUserIds: interestedUserIds ?? this.interestedUserIds,
     );
   }
 }

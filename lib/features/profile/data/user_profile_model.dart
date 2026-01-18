@@ -20,6 +20,9 @@ class UserProfileModel {
   final String? department;
   final String? yearOfStudy;
   final String? profilePhotoUrl;
+  final List<String> subscribedOrgIds;
+  final Map<String, DateTime> subscriptionTimestamps; // New field to track subscription time
+  final List<String> bookmarkedEventIds;
 
   // Organization-specific fields
   final String? organizationName; // Required for orgs (same as name)
@@ -54,6 +57,9 @@ class UserProfileModel {
     this.logoUrl,
     this.verified,
     this.updatedAt,
+    this.subscribedOrgIds = const [],
+    this.subscriptionTimestamps = const {}, 
+    this.bookmarkedEventIds = const [],
   });
 
   /// Create UserProfileModel from Firestore document
@@ -89,6 +95,17 @@ class UserProfileModel {
       updatedAt: data['updatedAt'] != null
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
+      subscribedOrgIds: data['subscribedOrgIds'] != null
+          ? List<String>.from(data['subscribedOrgIds'])
+          : [],
+      subscriptionTimestamps: data['subscriptionTimestamps'] != null
+          ? (data['subscriptionTimestamps'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(key, (value as Timestamp).toDate()),
+            )
+          : {},
+      bookmarkedEventIds: data['bookmarkedEventIds'] != null
+          ? List<String>.from(data['bookmarkedEventIds'])
+          : [],
     );
   }
 
@@ -99,6 +116,9 @@ class UserProfileModel {
       'name': name,
       'phoneNumber': phoneNumber,
       'updatedAt': FieldValue.serverTimestamp(),
+      'subscribedOrgIds': subscribedOrgIds,
+      'subscriptionTimestamps': subscriptionTimestamps,
+      'bookmarkedEventIds': bookmarkedEventIds,
     };
 
     // Add role-specific fields based on role
@@ -142,6 +162,9 @@ class UserProfileModel {
     String? contactPersonPhone,
     String? logoUrl,
     DateTime? updatedAt,
+    List<String>? subscribedOrgIds,
+    Map<String, DateTime>? subscriptionTimestamps,
+    List<String>? bookmarkedEventIds,
   }) {
     return UserProfileModel(
       uid: uid, // Immutable
@@ -164,6 +187,9 @@ class UserProfileModel {
       logoUrl: logoUrl ?? this.logoUrl,
       verified: verified, // Immutable (set by admin)
       updatedAt: updatedAt ?? this.updatedAt,
+      subscribedOrgIds: subscribedOrgIds ?? this.subscribedOrgIds,
+      subscriptionTimestamps: subscriptionTimestamps ?? this.subscriptionTimestamps,
+      bookmarkedEventIds: bookmarkedEventIds ?? this.bookmarkedEventIds,
     );
   }
 

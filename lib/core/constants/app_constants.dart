@@ -5,6 +5,7 @@ class AppConstants {
   static const String roleStudent = 'student';
   static const String roleOrganization = 'organization';
   static const String roleAdmin = 'admin';
+  static const String roleSuperAdmin = 'super_admin';
 
   // Event categories
   static const List<String> eventCategories = [

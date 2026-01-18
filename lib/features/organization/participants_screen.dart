@@ -8,6 +8,7 @@ import '../../core/theme/text_styles.dart';
 import '../../core/theme/colors.dart';
 import '../../core/services/auth_service.dart';
 import '../../app/app_config.dart';
+import '../../app/routes.dart';
 import '../events/data/event_repository.dart';
 import '../events/data/event_model.dart';
 
@@ -242,7 +243,20 @@ class ParticipantsScreen extends StatelessWidget {
               );
             },
           );
+
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.scanQr,
+            arguments: eventId,
+          );
+        },
+        icon: const Icon(Icons.qr_code_scanner),
+        label: const Text('Scan Ticket'),
+        backgroundColor: AppColors.primary,
       ),
     );
   }

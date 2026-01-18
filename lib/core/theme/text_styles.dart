@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppTextStyles {
   AppTextStyles._(); // Prevent instantiation
 
   // Headlines
-  static const TextStyle headlineLarge = TextStyle(
+  // Headlines
+  static final TextStyle headlineLarge = GoogleFonts.poppins(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
     height: 1.3,
   );
 
-  static const TextStyle headlineMedium = TextStyle(
+  static final TextStyle headlineMedium = GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -20,34 +22,34 @@ class AppTextStyles {
   );
 
   // Titles
-  static const TextStyle title = TextStyle(
+  static final TextStyle title = GoogleFonts.poppins(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   // Body text
-  static const TextStyle body = TextStyle(
+  static final TextStyle body = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
     height: 1.5,
   );
 
-  static const TextStyle bodyBold = TextStyle(
+  static final TextStyle bodyBold = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   // Labels & captions
-  static const TextStyle caption = TextStyle(
+  static final TextStyle caption = GoogleFonts.poppins(
     fontSize: 12,
     color: AppColors.textDisabled,
   );
 
   // Buttons
-  static const TextStyle button = TextStyle(
+  static final TextStyle button = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: Colors.white,
@@ -55,7 +57,7 @@ class AppTextStyles {
   );
 
   // Links
-  static const TextStyle link = TextStyle(
+  static final TextStyle link = GoogleFonts.poppins(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: AppColors.primary,

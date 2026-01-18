@@ -13,10 +13,21 @@ class VerifyOrgScreen extends StatelessWidget {
     String orgId,
     bool verified,
   ) async {
-    await FirebaseFirestore.instance
+    final batch = FirebaseFirestore.instance.batch();
+    
+    // Update organizations collection
+    final orgRef = FirebaseFirestore.instance
         .collection(ApiEndpoints.organizations)
-        .doc(orgId)
-        .update({'verified': verified});
+        .doc(orgId);
+    batch.update(orgRef, {'verified': verified});
+    
+    // Update users collection (so the Org User actually gets the status)
+    final userRef = FirebaseFirestore.instance
+        .collection(ApiEndpoints.users)
+        .doc(orgId);
+    batch.update(userRef, {'verified': verified});
+
+    await batch.commit();
   }
 
   @override
