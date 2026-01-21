@@ -40,6 +40,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   
   // New Fields
   DateTime? _registrationDeadline;
+  String _promotionTarget = 'none'; // none, district, global
 
   // Date and time fields
   DateTime? _selectedDate;
@@ -502,6 +503,50 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   value: _certificateProvided,
                   onChanged: (v) => setState(() => _certificateProvided = v),
                 ),
+                
+                const SizedBox(height: 16),
+                const Divider(),
+                const Text('Promotion (Optional)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  title: const Text('Request Ad Banner Promotion'),
+                  subtitle: const Text('Feature this event on student dashboards'),
+                  value: _promotionTarget != 'none',
+                  onChanged: (v) {
+                    setState(() {
+                      if (v == true) {
+                        _promotionTarget = 'district'; // Default to district
+                      } else {
+                        _promotionTarget = 'none';
+                      }
+                    });
+                  },
+                ),
+                if (_promotionTarget != 'none') ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: Column(
+                      children: [
+                        RadioListTile<String>(
+                          title: const Text('District Level'),
+                          subtitle: const Text('Visible to students in your district (Approved by District Admin)'),
+                          value: 'district',
+                          groupValue: _promotionTarget,
+                          onChanged: (v) => setState(() => _promotionTarget = v!),
+                        ),
+                        RadioListTile<String>(
+                          title: const Text('Global Level'),
+                          subtitle: const Text('Visible to all students (Approved by Super Admin)'),
+                          value: 'global',
+                          groupValue: _promotionTarget,
+                          onChanged: (v) => setState(() => _promotionTarget = v!),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
                 const SizedBox(height: 24),
                 
                 SizedBox(
@@ -587,6 +632,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 venue: _venueController.text.trim().isEmpty ? null : _venueController.text.trim(),
                                 googleMapsLink: _mapsLinkController.text.trim().isEmpty ? null : _mapsLinkController.text.trim(),
                                 registrationDeadline: _registrationDeadline,
+                                promotionTarget: _promotionTarget,
+                                promotionStatus: _promotionTarget == 'none' ? 'none' : 'pending',
 
                               );
 

@@ -167,6 +167,26 @@ class AuthService {
   /// Current user ID
   String? get currentUserId => _auth.currentUser?.uid;
 
+  /// Change password
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) throw FirebaseAuthException(code: 'user-not-found');
+
+    final cred = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    // Re-authenticate
+    await user.reauthenticateWithCredential(cred);
+
+    // Update
+    await user.updatePassword(newPassword);
+  }
+
   /// Auth stream (optional use later)
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 }

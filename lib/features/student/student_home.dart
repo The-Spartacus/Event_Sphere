@@ -9,6 +9,8 @@ import '../certificates/certificate_vault_screen.dart';
 import 'student_dashboard_screen.dart';
 import 'my_events_screen.dart';
 
+import '../../widgets/glass_bottom_nav_bar.dart';
+
 class StudentHome extends StatefulWidget {
   const StudentHome({super.key});
 
@@ -29,30 +31,32 @@ class _StudentHomeState extends State<StudentHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: _pages[_index],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: GlassBottomNavBar(
         currentIndex: _index,
         onTap: (i) {
           setState(() => _index = i);
         },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event),
+            icon: Icon(Icons.event_outlined),
+            activeIcon: Icon(Icons.event),
             label: 'Events',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event_available),
+            icon: Icon(Icons.event_available_outlined),
+            activeIcon: Icon(Icons.event_available),
             label: 'My Events',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.workspace_premium),
+            icon: Icon(Icons.workspace_premium_outlined),
+            activeIcon: Icon(Icons.workspace_premium),
             label: 'Certificates',
           ),
         ],

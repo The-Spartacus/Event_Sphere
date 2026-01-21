@@ -15,14 +15,14 @@ import '../data/storage_service.dart';
 
 /// Student Profile Screen
 /// Allows students to view and edit their profile information
-class StudentProfileScreen extends StatefulWidget {
-  const StudentProfileScreen({super.key});
+class EditStudentProfileScreen extends StatefulWidget {
+  const EditStudentProfileScreen({super.key});
 
   @override
-  State<StudentProfileScreen> createState() => _StudentProfileScreenState();
+  State<EditStudentProfileScreen> createState() => _EditStudentProfileScreenState();
 }
 
-class _StudentProfileScreenState extends State<StudentProfileScreen> {
+class _EditStudentProfileScreenState extends State<EditStudentProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _collegeController = TextEditingController();
@@ -75,7 +75,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text('My Profile'),
+              title: const Text('Edit Profile'),
               actions: [
                 if (controller.hasChanges)
                   IconButton(

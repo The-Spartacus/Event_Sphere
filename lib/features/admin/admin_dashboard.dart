@@ -10,6 +10,7 @@ import '../../core/constants/api_endpoints.dart';
 import '../../app/routes.dart';
 import '../../app/app_config.dart';
 import '../../core/constants/app_constants.dart';
+import '../../widgets/app_drawer.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -102,6 +103,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final authService = context.read<AuthService>();
 
     return Scaffold(
+      endDrawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
@@ -110,16 +112,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
             tooltip: 'Sync Missing Organizations',
             onPressed: () => _syncOrganizations(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authService.logout();
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.login,
-                (_) => false,
-              );
-            },
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu), // Or Avatar
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
           ),
         ],
       ),

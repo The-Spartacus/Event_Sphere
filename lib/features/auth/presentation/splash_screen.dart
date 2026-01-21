@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/auth_service.dart';
+import '../../profile/logic/profile_controller.dart';
 import '../../../core/constants/storage_keys.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
@@ -39,6 +40,14 @@ class _SplashScreenState extends State<SplashScreen> {
     final authService = context.read<AuthService>();
     final state = await authService.checkAuthState();
 
+    if (!mounted) return;
+
+    if (state != AuthState.unauthenticated && authService.currentUserId != null) {
+      // Pre-load profile
+      final profileController = context.read<ProfileController>();
+      await profileController.loadProfile(authService.currentUserId!);
+    }
+    
     if (!mounted) return;
 
     switch (state) {

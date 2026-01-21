@@ -39,6 +39,13 @@ class AdminHome extends StatelessWidget {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.campaign),
+              title: const Text('Ad Requests'),
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.adApproval);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.analytics),
               title: const Text('Analytics'),
               onTap: () {

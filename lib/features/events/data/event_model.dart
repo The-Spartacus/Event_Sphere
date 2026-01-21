@@ -33,6 +33,10 @@ class EventModel {
   final int views;
   final List<String> interestedUserIds;
 
+  // Promotion/Ad Features
+  final String promotionStatus; // none, pending, approved, rejected
+  final String promotionTarget; // none, district, global
+
   EventModel({
     required this.id,
     required this.title,
@@ -61,40 +65,28 @@ class EventModel {
     this.registrationDeadline,
     this.views = 0,
     this.interestedUserIds = const [],
+    this.promotionStatus = 'none',
+    this.promotionTarget = 'none',
   });
 
-  /// Create EventModel from Firestore document
-  /// Handles backward compatibility: if startTime/endTime are missing, uses date with default times
   factory EventModel.fromDoc(
     DocumentSnapshot<Map<String, dynamic>> doc,
   ) {
     final data = doc.data()!;
     final date = (data['date'] as Timestamp).toDate();
     
-    // Handle backward compatibility: if startTime/endTime exist, use them; otherwise derive from date
     DateTime startTime;
     DateTime endTime;
     
     if (data['startTime'] != null && data['endTime'] != null) {
-      // New format: separate date, startTime, and endTime
       startTime = (data['startTime'] as Timestamp).toDate();
       endTime = (data['endTime'] as Timestamp).toDate();
     } else {
-      // Legacy format: derive start/end from date field
-      // Default to 9 AM start, 5 PM end for backward compatibility
       startTime = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        9,
-        0,
+        date.year, date.month, date.day, 9, 0,
       );
       endTime = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        17,
-        0,
+        date.year, date.month, date.day, 17, 0,
       );
     }
     
@@ -111,9 +103,7 @@ class EventModel {
       endTime: endTime,
       duration: data['duration'] ?? '',
       isPaid: data['isPaid'] ?? false,
-      price: data['price'] != null
-          ? (data['price'] as num).toDouble()
-          : null,
+      price: data['price'] != null ? (data['price'] as num).toDouble() : null,
       certificateProvided: data['certificateProvided'] ?? false,
       registrationLimit: data['registrationLimit'],
       approved: data['approved'] ?? false,
@@ -133,11 +123,11 @@ class EventModel {
       interestedUserIds: data['interestedUserIds'] != null
           ? List<String>.from(data['interestedUserIds'])
           : [],
+      promotionStatus: data['promotionStatus'] ?? 'none',
+      promotionTarget: data['promotionTarget'] ?? 'none',
     );
   }
 
-  /// Convert EventModel to Firestore map
-  /// Stores date, startTime, and endTime as Firestore Timestamps for proper querying
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -167,11 +157,11 @@ class EventModel {
           : null,
       'views': views,
       'interestedUserIds': interestedUserIds,
+      'promotionStatus': promotionStatus,
+      'promotionTarget': promotionTarget,
     };
   }
 
-  /// Copy helper for creating modified instances
-  /// Ensures organizationId, organizationName, createdAt, and id remain immutable
   EventModel copyWith({
     String? title,
     String? category,
@@ -196,12 +186,14 @@ class EventModel {
     DateTime? registrationDeadline,
     int? views,
     List<String>? interestedUserIds,
+    String? promotionStatus,
+    String? promotionTarget,
   }) {
     return EventModel(
       id: id,
       title: title ?? this.title,
-      organizationId: organizationId, // Immutable: cannot change owner
-      organizationName: organizationName, // Immutable: cannot change owner name
+      organizationId: organizationId,
+      organizationName: organizationName,
       category: category ?? this.category,
       locationType: locationType ?? this.locationType,
       location: location ?? this.location,
@@ -211,12 +203,10 @@ class EventModel {
       duration: duration ?? this.duration,
       isPaid: isPaid ?? this.isPaid,
       price: price ?? this.price,
-      certificateProvided:
-          certificateProvided ?? this.certificateProvided,
-      registrationLimit:
-          registrationLimit ?? this.registrationLimit,
-      approved: approved ?? this.approved, // Typically set by admin, but allowed for flexibility
-      createdAt: createdAt, // Immutable: creation timestamp never changes
+      certificateProvided: certificateProvided ?? this.certificateProvided,
+      registrationLimit: registrationLimit ?? this.registrationLimit,
+      approved: approved ?? this.approved,
+      createdAt: createdAt,
       posterUrl: posterUrl ?? this.posterUrl,
       description: description ?? this.description,
       keyFeatures: keyFeatures ?? this.keyFeatures,
@@ -226,6 +216,8 @@ class EventModel {
       registrationDeadline: registrationDeadline ?? this.registrationDeadline,
       views: views ?? this.views,
       interestedUserIds: interestedUserIds ?? this.interestedUserIds,
+      promotionStatus: promotionStatus ?? this.promotionStatus,
+      promotionTarget: promotionTarget ?? this.promotionTarget,
     );
   }
 }

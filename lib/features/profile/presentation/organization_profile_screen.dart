@@ -15,14 +15,14 @@ import '../data/storage_service.dart';
 
 /// Organization Profile Screen
 /// Allows organizations to view and edit their profile information
-class OrganizationProfileScreen extends StatefulWidget {
-  const OrganizationProfileScreen({super.key});
+class EditOrganizationProfileScreen extends StatefulWidget {
+  const EditOrganizationProfileScreen({super.key});
 
   @override
-  State<OrganizationProfileScreen> createState() => _OrganizationProfileScreenState();
+  State<EditOrganizationProfileScreen> createState() => _EditOrganizationProfileScreenState();
 }
 
-class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
+class _EditOrganizationProfileScreenState extends State<EditOrganizationProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -79,7 +79,7 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Organization Profile'),
+              title: const Text('Edit Organization Profile'),
               actions: [
                 if (controller.hasChanges)
                   IconButton(

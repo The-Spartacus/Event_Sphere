@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/theme_provider.dart';
 import '../profile/logic/profile_controller.dart';
+import '../../widgets/app_drawer.dart';
 
 import '../../core/services/auth_service.dart';
 import '../../core/theme/text_styles.dart';
@@ -57,104 +58,7 @@ class OrgDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      endDrawer: Drawer(
-        child: Consumer2<ProfileController, ThemeProvider>(
-          builder: (context, profileController, themeProvider, _) {
-            final profile = profileController.profile;
-            final hasImage = profile?.profilePhotoUrl != null &&
-                profile!.profilePhotoUrl!.isNotEmpty;
-
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                UserAccountsDrawerHeader(
-                  accountName: Text(profile?.name ?? 'Organization'),
-                  accountEmail: Text(profile?.email ?? ''),
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    backgroundImage: hasImage
-                        ? NetworkImage(profile!.profilePhotoUrl!)
-                        : null,
-                    child: !hasImage
-                        ? const Icon(Icons.person, size: 40, color: Colors.grey)
-                        : null,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.edit),
-                  title: const Text('Edit Profile'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.profile,
-                      arguments: 'organization',
-                    );
-                  },
-                ),
-                const Divider(),
-                SwitchListTile(
-                  secondary: Icon(themeProvider.isDarkMode
-                      ? Icons.dark_mode
-                      : Icons.light_mode),
-                  title: const Text('Dark Mode'),
-                  value: themeProvider.isDarkMode,
-                  onChanged: (value) {
-                    themeProvider.setThemeMode(
-                      value ? ThemeMode.dark : ThemeMode.light,
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text(
-                    'Logout',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Logout'),
-                        content: const Text('Are you sure you want to logout?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(context); // Close dialog
-                              final authService = context.read<AuthService>();
-                              await authService.logout();
-                              
-                              if (!context.mounted) return;
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                AppRoutes.login,
-                                (_) => false,
-                              );
-                            },
-                            child: const Text(
-                              'Logout',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-      ),
+      endDrawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(AppConfig.defaultPadding),
         child: Column(

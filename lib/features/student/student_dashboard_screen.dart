@@ -11,6 +11,7 @@ import '../events/data/event_repository.dart';
 import '../events/data/event_model.dart';
 import '../../widgets/event_card.dart';
 import '../../core/services/auth_service.dart';
+import '../../widgets/app_drawer.dart';
 import '../profile/logic/profile_controller.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/constants/app_constants.dart';
@@ -105,104 +106,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
           ],
         ),
-        endDrawer: Drawer(
-          child: Consumer2<ProfileController, ThemeProvider>(
-            builder: (context, profileController, themeProvider, _) {
-              final profile = profileController.profile;
-              final hasImage = profile?.profilePhotoUrl != null &&
-                  profile!.profilePhotoUrl!.isNotEmpty;
-
-              return ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  UserAccountsDrawerHeader(
-                    accountName: Text(profile?.name ?? 'Student'),
-                    accountEmail: Text(profile?.email ?? ''),
-                    currentAccountPicture: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      backgroundImage: hasImage
-                          ? NetworkImage(profile!.profilePhotoUrl!)
-                          : null,
-                      child: !hasImage
-                          ? const Icon(Icons.person, size: 40, color: Colors.grey)
-                          : null,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.edit),
-                    title: const Text('Edit Profile'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.profile,
-                        arguments: 'student',
-                      );
-                    },
-                  ),
-                  const Divider(),
-                  SwitchListTile(
-                    secondary: Icon(themeProvider.isDarkMode
-                        ? Icons.dark_mode
-                        : Icons.light_mode),
-                    title: const Text('Dark Mode'),
-                    value: themeProvider.isDarkMode,
-                    onChanged: (value) {
-                      themeProvider.setThemeMode(
-                        value ? ThemeMode.dark : ThemeMode.light,
-                      );
-                    },
-                  ),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context); // Close drawer
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Logout'),
-                          content: const Text('Are you sure you want to logout?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                Navigator.pop(context); // Close dialog
-                                final authService = context.read<AuthService>();
-                                await authService.logout();
-                                
-                                if (!context.mounted) return;
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  AppRoutes.login,
-                                  (_) => false,
-                                );
-                              },
-                              child: const Text(
-                                'Logout',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
+        endDrawer: const AppDrawer(),
         body: Consumer<EventController>(
           builder: (context, controller, _) {
             if (controller.isLoading) {
@@ -210,11 +114,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             }
 
             final events = controller.events;
-            if (events.isEmpty) {
-              return const Center(child: Text('No events available'));
-            }
-
-            // Simple "Featured" logic: Take first 5 events or randomize
             final featuredEvents = events.take(5).toList();
 
             return SingleChildScrollView(
@@ -223,10 +122,56 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 children: [
                    const SizedBox(height: 16),
                   
-                  // Rolling Banner
-                  SizedBox(
-                    height: 200,
-                    child: PageView.builder(
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search events...',
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade200,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                            ),
+                            onChanged: (value) => controller.searchEvents(value),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.notifications_none),
+                            onPressed: () {
+                               // Navigate to Notifications
+                               Navigator.pushNamed(context, AppRoutes.notifications);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (events.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: Center(child: Text('No events found')),
+                    )
+                  else ...[
+                    // Rolling Banner
+                    SizedBox(
+                      height: 200,
+                      child: PageView.builder(
                       controller: _pageController,
                       onPageChanged: (index) {
                         setState(() {
@@ -297,90 +242,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Favorites Section (Subscribed Events)
-                  Consumer<ProfileController>(
-                    builder: (context, profileController, _) {
-                      final userProfile = profileController.profile;
-                      if (userProfile == null) return const SizedBox.shrink();
 
-                      final subscribedIds = userProfile.subscribedOrgIds;
-                      if (subscribedIds.isEmpty) return const SizedBox.shrink();
-
-                      final subscribedEvents = controller.events.where((element) {
-                        if (!subscribedIds.contains(element.organizationId)) {
-                          return false;
-                        }
-                        // Only show upcoming events
-                        if (element.date.isBefore(
-                            DateTime.now().subtract(const Duration(days: 1)))) {
-                          return false;
-                        }
-
-                        // Show only events created after subscription
-                        final subTime = userProfile
-                            .subscriptionTimestamps[element.organizationId];
-                        if (subTime != null) {
-                          return element.createdAt.isAfter(subTime);
-                        }
-                        return true; // Legacy: show all if no timestamp
-                      }).toList();
-
-                      if (subscribedEvents.isEmpty) return const SizedBox.shrink();
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.favorite, color: Colors.amber),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Subscribed',
-                                  style: AppTextStyles.headlineMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 300, // Adjust height as needed for EventCard
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              scrollDirection: Axis.horizontal,
-                              itemCount: subscribedEvents.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 12),
-                              itemBuilder: (context, index) {
-                                final event = subscribedEvents[index];
-                                return SizedBox(
-                                  width: 200, // Fixed width for horizontal items
-                                  child: EventCard(
-                                    title: event.title,
-                                    organization: event.organizationName,
-                                    date: event.date,
-                                    locationType: event.locationType,
-                                    isPaid: event.isPaid,
-                                    price: event.price,
-                                    organizationId: event.organizationId,
-                                    posterUrl: event.posterUrl,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.eventDetails,
-                                        arguments: event.id,
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-                      );
-                    },
-                  ),
                   
                   // Featured Section Header
                   Padding(
@@ -425,7 +287,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 100),
+                  ],
                 ],
               ),
             );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/services/auth_service.dart';
+import '../../profile/logic/profile_controller.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/theme/colors.dart';
 import '../../../app/routes.dart';
@@ -37,6 +38,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final state = await authService.checkAuthState();
+
+      if (state != AuthState.unauthenticated && authService.currentUserId != null) {
+          // Load profile
+          if (mounted) {
+            await context.read<ProfileController>().loadProfile(authService.currentUserId!);
+          }
+      }
 
       if (!mounted) return;
 

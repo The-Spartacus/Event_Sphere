@@ -20,6 +20,20 @@ class EventRepository {
         );
   }
 
+  /// Stream pending ad events (for admins)
+  Stream<List<EventModel>> streamPendingAdEvents() {
+    return _firestore
+        .collection(ApiEndpoints.events)
+        .where('promotionStatus', isEqualTo: 'pending')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => EventModel.fromDoc(doc))
+              .toList(),
+        );
+  }
+
   /// Stream events created by an organization
   Stream<List<EventModel>> streamOrganizationEvents(
     String organizationId,
