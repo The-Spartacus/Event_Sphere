@@ -1,7 +1,8 @@
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import '../../../core/constants/api_endpoints.dart';
-import 'event_model.dart';
+import 'package:event_sphere/core/constants/api_endpoints.dart';
+import 'package:event_sphere/features/events/data/event_model.dart';
+import 'package:event_sphere/features/events/data/review_model.dart';
 
 class EventRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -174,8 +175,26 @@ class EventRepository {
       );
     }
     
-  // Sort logic could go here, or handled by caller.
+    // Sort logic could go here, or handled by caller.
     return events;
+  }
+
+  /// Stream events by a list of IDs
+  Stream<List<EventModel>> getEventsByIdsStream(List<String> ids) {
+    if (ids.isEmpty) return Stream.value([]);
+    
+    // For streams, we'll stream approved events and filter by ID 
+    // to avoid the 10-item whereIn limit complexities in real-time
+    return _firestore
+        .collection(ApiEndpoints.events)
+        .where('approved', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => EventModel.fromDoc(doc))
+              .where((event) => ids.contains(event.id))
+              .toList();
+        });
   }
 
   /// Get list of event IDs that a user has registered for
@@ -224,5 +243,60 @@ class EventRepository {
         .collection(ApiEndpoints.registrations)
         .doc(registrationId)
         .update({'attended': true});
+  }
+
+  /// Get reviews for an event
+  Stream<List<ReviewModel>> streamReviews(String eventId) {
+    return _firestore
+        .collection(ApiEndpoints.events)
+        .doc(eventId)
+        .collection('reviews')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ReviewModel.fromDoc(doc))
+            .toList());
+  }
+
+  /// Add a review to an event
+  Future<void> addReview(String eventId, ReviewModel review) async {
+    await _firestore
+        .collection(ApiEndpoints.events)
+        .doc(eventId)
+        .collection('reviews')
+        .add(review.toMap());
+  }
+
+  /// Stream approved events sorted by distance from user location
+  Stream<List<EventModel>> streamEventsSortedByDistance(double userLat, double userLng) {
+    return _firestore
+        .collection(ApiEndpoints.events)
+        .where('approved', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+          final events = snapshot.docs.map((doc) => EventModel.fromDoc(doc)).toList();
+          
+          events.sort((a, b) {
+            // If an event has no location, put it at the end
+            if (a.latitude == null || a.longitude == null) return 1;
+            if (b.latitude == null || b.longitude == null) return -1;
+            
+            final distA = _calculateDistance(userLat, userLng, a.latitude!, a.longitude!);
+            final distB = _calculateDistance(userLat, userLng, b.latitude!, b.longitude!);
+            
+            return distA.compareTo(distB);
+          });
+          
+          return events;
+        });
+  }
+
+  /// Haversine formula to calculate distance in km
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double p = 0.017453292519943295;
+    final double a = 0.5 - math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) * math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) / 2;
+    return 12742 * math.asin(math.sqrt(a));
   }
 }

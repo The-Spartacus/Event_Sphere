@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../features/profile/logic/profile_controller.dart';
 import '../core/theme/colors.dart';
@@ -64,10 +65,11 @@ class EventCard extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 4 / 3,
                   child: (posterUrl != null && posterUrl!.isNotEmpty)
-                      ? Image.network(
-                          posterUrl!,
+                      ? CachedNetworkImage(
+                          imageUrl: posterUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholder(context),
+                          placeholder: (_, __) => _buildPlaceholder(context),
+                          errorWidget: (_, __, ___) => _buildPlaceholder(context),
                         )
                       : _buildPlaceholder(context),
                 ),

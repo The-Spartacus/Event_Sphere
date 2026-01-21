@@ -15,6 +15,9 @@ import '../features/events/presentation/event_filter_screen.dart';
 import '../features/events/data/event_model.dart';
 import '../features/tickets/presentation/ticket_screen.dart';
 import '../features/notifications/notification_screen.dart';
+import '../features/student/saved_events_screen.dart';
+import '../features/student/calendar_screen.dart';
+import '../features/student/location_picker_screen.dart';
 
 // Certificates
 import '../features/certificates/certificate_vault_screen.dart';
@@ -59,6 +62,9 @@ class AppRoutes {
   static const String editProfile = '/profile/edit'; // Edit Form
   static const String changePassword = '/profile/change-password';
   static const String ticket = '/ticket';
+  static const String savedEvents = '/student/saved-events';
+  static const String calendar = '/student/calendar';
+  static const String locationPicker = '/student/location-picker';
 
   static const String orgHome = '/org/home';
   static const String createEvent = '/org/create-event';
@@ -147,9 +153,18 @@ class AppRoutes {
           ParticipantsScreen(eventId: settings.arguments as String),
         );
 
+      case savedEvents:
+        return _page(const SavedEventsScreen());
+
+      case calendar:
+        return _page(const CalendarScreen());
+
+      case locationPicker:
+        return _page(const LocationPickerScreen());
+
       case scanQr:
         return _page(
-          ScanQrScreen(eventId: settings.arguments as String),
+          ScanQrScreen(eventId: settings.arguments as String?),
         );
 
       case publicOrgProfile:
@@ -166,16 +181,16 @@ class AppRoutes {
         return _page(const NotificationScreen());
 
       case adminHome:
-        return _page(const AdminHome());
+        return _page(const AdminHome(initialIndex: 0));
 
       case verifyOrg:
-        return _page(const VerifyOrgScreen());
+        return _page(const AdminHome(initialIndex: 1));
 
       case adApproval:
-        return _page(const AdApprovalScreen());
+        return _page(const AdminHome(initialIndex: 2));
 
       case analytics:
-        return _page(const AnalyticsScreen());
+        return _page(const AdminHome(initialIndex: 3));
 
       case createAdmin:
         return _page(const CreateAdminScreen());

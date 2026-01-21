@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/services/auth_service.dart';
 import '../../profile/logic/profile_controller.dart';
@@ -8,6 +9,7 @@ import '../../../core/constants/storage_keys.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../app/routes.dart';
+import '../../../core/widgets/planet_orbit_loader.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -73,20 +75,32 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/event_sphere.png',
-              width: 150,
-              height: 150,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/event_sphere.png',
+                  width: 80,
+                  height: 80,
+                ),
+                const SizedBox(width: 20),
+                Text(
+                  'Event Sphere',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Event Sphere',
-              style: AppTextStyles.headlineLarge.copyWith(
-                color: Colors.white,
-              ),
+            const SizedBox(height: 60),
+            const PlanetOrbitLoader(
+              size: 120,
+              planetColor: Colors.white,
+              coreColor: Color(0xFFFFD700), // Gold core
             ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),

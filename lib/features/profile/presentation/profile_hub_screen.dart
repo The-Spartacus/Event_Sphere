@@ -4,6 +4,7 @@ import '../logic/profile_controller.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../app/routes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileHubScreen extends StatelessWidget {
   const ProfileHubScreen({super.key});
@@ -43,7 +44,7 @@ class ProfileHubScreen extends StatelessWidget {
                           radius: 40,
                           backgroundColor: Colors.white,
                           backgroundImage: hasImage
-                              ? NetworkImage(profile.profilePhotoUrl!)
+                              ? CachedNetworkImageProvider(profile.profilePhotoUrl!)
                               : null,
                           child: !hasImage
                               ? const Icon(Icons.person, size: 40, color: Colors.grey)

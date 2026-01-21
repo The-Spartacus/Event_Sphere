@@ -10,6 +10,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/theme/text_styles.dart';
 import '../../widgets/event_card.dart';
 import '../../app/routes.dart';
+import 'calendar_screen.dart';
 
 class MyEventsScreen extends StatelessWidget {
   const MyEventsScreen({super.key});
@@ -33,7 +34,7 @@ class MyEventsScreen extends StatelessWidget {
         return controller;
       },
       child: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: AppBar(
              title: Text(
@@ -44,9 +45,11 @@ class MyEventsScreen extends StatelessWidget {
               ),
             ),
             bottom: const TabBar(
+              isScrollable: true,
               tabs: [
                 Tab(text: 'Registered'),
                 Tab(text: 'Interested'),
+                Tab(text: 'Calendar'),
                 Tab(text: 'Past'),
               ],
             ),
@@ -65,6 +68,7 @@ class MyEventsScreen extends StatelessWidget {
                 children: [
                   _EventList(events: controller.registeredEvents, emptyMessage: 'No registered events'),
                   _EventList(events: controller.interestedEvents, emptyMessage: 'No bookmarked events'),
+                  const CalendarScreen(showAppBar: false),
                   _EventList(events: controller.pastEvents, emptyMessage: 'No past events'),
                 ],
               );

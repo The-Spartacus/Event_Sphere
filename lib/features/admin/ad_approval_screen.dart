@@ -5,6 +5,8 @@ import '../../core/services/auth_service.dart';
 import '../events/logic/event_controller.dart';
 import '../events/data/event_model.dart';
 import '../../core/constants/app_constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'widgets/admin_drawer.dart';
 
 class AdApprovalScreen extends StatefulWidget {
   const AdApprovalScreen({super.key});
@@ -46,9 +48,7 @@ class _AdApprovalScreenState extends State<AdApprovalScreen> {
     // Use local state instead of authService getter
     final isSuperAdmin = _isSuperAdmin;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pending Ad Requests')),
-      body: eventController.isLoading
+    return eventController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : eventController.pendingAdEvents.isEmpty
               ? const Center(child: Text('No pending ad requests'))
@@ -66,7 +66,14 @@ class _AdApprovalScreenState extends State<AdApprovalScreen> {
                         children: [
                           ListTile(
                             leading: event.posterUrl != null
-                                ? Image.network(event.posterUrl!, width: 50, height: 50, fit: BoxFit.cover)
+                                ? CachedNetworkImage(
+                                    imageUrl: event.posterUrl!,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => const Icon(Icons.event, size: 50),
+                                    errorWidget: (_, __, ___) => const Icon(Icons.event, size: 50),
+                                  )
                                 : const Icon(Icons.event, size: 50),
                             title: Text(event.title),
                             subtitle: Text('By ${event.organizationName}\nTarget: ${event.promotionTarget.toUpperCase()}'),
@@ -96,8 +103,7 @@ class _AdApprovalScreenState extends State<AdApprovalScreen> {
                       ),
                     );
                   },
-                ),
-    );
+                );
   }
 
   void _confirmAction(BuildContext context, EventModel event, bool approve) {

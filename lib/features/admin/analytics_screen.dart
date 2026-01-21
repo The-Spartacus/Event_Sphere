@@ -5,6 +5,8 @@ import '../../core/constants/api_endpoints.dart';
 import '../../core/theme/text_styles.dart';
 import '../../app/app_config.dart';
 
+import 'widgets/admin_drawer.dart';
+
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
 
@@ -16,39 +18,34 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConfig.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Platform Statistics',
-              style: AppTextStyles.headlineMedium,
-            ),
-            const SizedBox(height: 24),
+    return Padding(
+      padding: const EdgeInsets.all(AppConfig.defaultPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Platform Statistics',
+            style: AppTextStyles.headlineMedium,
+          ),
+          const SizedBox(height: 24),
 
-            _StatTile(
-              label: 'Total Users',
-              future: _count(ApiEndpoints.users),
-            ),
-            _StatTile(
-              label: 'Organizations',
-              future: _count(ApiEndpoints.organizations),
-            ),
-            _StatTile(
-              label: 'Events',
-              future: _count(ApiEndpoints.events),
-            ),
-            _StatTile(
-              label: 'Certificates Issued',
-              future: _count(ApiEndpoints.certificates),
-            ),
-          ],
-        ),
+          _StatTile(
+            label: 'Total Users',
+            future: _count(ApiEndpoints.users),
+          ),
+          _StatTile(
+            label: 'Organizations',
+            future: _count(ApiEndpoints.organizations),
+          ),
+          _StatTile(
+            label: 'Events',
+            future: _count(ApiEndpoints.events),
+          ),
+          _StatTile(
+            label: 'Certificates Issued',
+            future: _count(ApiEndpoints.certificates),
+          ),
+        ],
       ),
     );
   }

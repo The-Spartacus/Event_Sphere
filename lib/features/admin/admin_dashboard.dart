@@ -10,7 +10,7 @@ import '../../core/constants/api_endpoints.dart';
 import '../../app/routes.dart';
 import '../../app/app_config.dart';
 import '../../core/constants/app_constants.dart';
-import '../../widgets/app_drawer.dart';
+
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -100,73 +100,63 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = context.read<AuthService>();
-
-    return Scaffold(
-      endDrawer: const AppDrawer(),
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sync Missing Organizations',
-            onPressed: () => _syncOrganizations(context),
+    // Removed Scaffold to avoid duplication with AdminHome
+    return Padding(
+      padding: const EdgeInsets.all(AppConfig.defaultPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Platform Administration',
+                style: AppTextStyles.headlineMedium,
+              ),
+              IconButton(
+                icon: const Icon(Icons.sync),
+                tooltip: 'Sync Missing Organizations',
+                onPressed: () => _syncOrganizations(context),
+              ),
+            ],
           ),
-          Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu), // Or Avatar
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConfig.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Platform Administration',
-              style: AppTextStyles.headlineMedium,
-            ),
-            const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator())
-            else ...[
-              if (_userRole == AppConstants.roleSuperAdmin || _userRole == 'super_admin') ...[
-                _AdminCard(
-                  icon: Icons.person_add,
-                  title: 'Create Admin',
-                  description: 'Create a new sub-admin account',
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.createAdmin);
-                  },
-                ),
-                const SizedBox(height: 16),
-              ],
-
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else ...[
+            if (_userRole == AppConstants.roleSuperAdmin || _userRole == 'super_admin') ...[
               _AdminCard(
-                icon: Icons.verified_user,
-                title: 'Verify Organizations',
-                description: 'Approve or reject organization accounts',
+                icon: Icons.person_add,
+                title: 'Create Admin',
+                description: 'Create a new sub-admin account',
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.verifyOrg);
+                  Navigator.pushNamed(context, AppRoutes.createAdmin);
                 },
               ),
               const SizedBox(height: 16),
-
-              _AdminCard(
-                icon: Icons.analytics_outlined,
-                title: 'Analytics',
-                description: 'View platform statistics',
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.analytics);
-                },
-              ),
             ],
+
+            _AdminCard(
+              icon: Icons.verified_user,
+              title: 'Verify Organizations',
+              description: 'Approve or reject organization accounts',
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.verifyOrg);
+              },
+            ),
+            const SizedBox(height: 16),
+
+            _AdminCard(
+              icon: Icons.analytics_outlined,
+              title: 'Analytics',
+              description: 'View platform statistics',
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.analytics);
+              },
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

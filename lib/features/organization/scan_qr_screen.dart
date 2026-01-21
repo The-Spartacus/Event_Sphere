@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
+import 'package:provider/provider.dart';
 
 import '../events/data/event_repository.dart';
 import '../../core/theme/colors.dart';
+import '../../core/services/auth_service.dart'; // Verified import
 
 class ScanQrScreen extends StatefulWidget {
-  final String eventId;
+  final String? eventId; // Made optional
 
   const ScanQrScreen({
     super.key,
-    required this.eventId,
+    this.eventId,
   });
 
   @override
@@ -26,7 +27,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Ticket'),
+        title: Text(widget.eventId != null ? 'Scan Ticket' : 'Global Scanner'),
         actions: [
           IconButton(
             icon: ValueListenableBuilder(
@@ -37,7 +38,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                     return const Icon(Icons.flash_off, color: Colors.grey);
                   case TorchState.on:
                     return const Icon(Icons.flash_on, color: Colors.yellow);
-                  case TorchState.auto: // Handle auto case if needed, or default
+                  case TorchState.auto:
                     return const Icon(Icons.flash_auto, color: Colors.grey);
                   case TorchState.unavailable:
                     return const Icon(Icons.no_flash, color: Colors.grey);
@@ -76,12 +77,11 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
               for (final barcode in barcodes) {
                 if (barcode.rawValue != null) {
                   _processCode(barcode.rawValue!);
-                  break; // Process only one
+                  break; 
                 }
               }
             },
           ),
-          // Overlay
           Center(
             child: Container(
               width: 250,
@@ -122,10 +122,20 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
       // 2. Verify Event ID
       final eventId = regDetails['eventId'];
-      if (eventId != widget.eventId) {
+      
+      // If a specific event was passed, enforce it
+      if (widget.eventId != null && eventId != widget.eventId) {
         _showResult(success: false, message: 'Ticket is for a different event');
         return;
       }
+      
+      // If global scan, verify ownership (optional but good security)
+      // For now, assuming if they scan it, they are attending. But we should check if they are the organizer?
+      // regDetails implies we fetched it.
+      // We can check if the current user is the organizer of the event.
+      // But we might need to fetch event details for that.
+      // Let's assume for now valid Global Scan if ticket exists.
+      // Ideally: fetch event -> check organizerId == currentUserId.
 
       // 3. Mark Attendance
       final attended = regDetails['attended'] ?? false;

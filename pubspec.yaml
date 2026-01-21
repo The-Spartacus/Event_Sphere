@@ -39,6 +39,11 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.1.4
   cloudinary_public: ^0.23.1
+  cached_network_image: ^3.4.1
+  add_2_calendar: ^3.0.1
+  table_calendar: ^3.2.0
+  geolocator: ^14.0.2
+  google_maps_flutter: ^2.14.0
 
 dev_dependencies:
   flutter_test:

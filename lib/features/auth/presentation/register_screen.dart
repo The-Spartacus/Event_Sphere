@@ -310,11 +310,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String label,
     required IconData icon,
     TextInputType inputType = TextInputType.text,
+    bool enabled = true,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: inputType,
+      enabled: enabled,
       validator: validator ?? (v) => (v == null || v.isEmpty) ? '$label is required' : null,
       decoration: InputDecoration(
         labelText: label,

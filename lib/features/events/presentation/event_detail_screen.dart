@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../profile/logic/profile_controller.dart';
+import 'package:event_sphere/features/profile/logic/profile_controller.dart';
 
-import '../../../core/theme/text_styles.dart';
-import '../../../core/theme/colors.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../app/app_config.dart';
+import 'package:event_sphere/core/theme/text_styles.dart';
+import 'package:event_sphere/core/theme/colors.dart';
+import 'package:event_sphere/core/constants/app_constants.dart';
+import 'package:event_sphere/app/app_config.dart';
 import '../data/event_repository.dart';
 import '../data/event_model.dart';
-import '../../../core/services/auth_service.dart';
-import '../../../app/routes.dart';
+import 'package:event_sphere/core/services/auth_service.dart';
+import 'package:event_sphere/app/routes.dart';
+import 'widgets/reviews_widget.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
@@ -147,16 +150,22 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Poster Image
+          // Poster Image
           if (hasPoster)
-            Container(
+            CachedNetworkImage(
+              imageUrl: event.posterUrl!,
               height: 200,
               width: double.infinity,
-              decoration: BoxDecoration(
+              fit: BoxFit.cover,
+              placeholder: (_, __) => Container(
+                height: 200,
                 color: Colors.grey.shade200,
-                image: DecorationImage(
-                  image: NetworkImage(event.posterUrl!),
-                  fit: BoxFit.cover,
-                ),
+                child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey)),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                height: 200,
+                color: Colors.grey.shade200,
+                child: const Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey)),
               ),
             ),
           
@@ -277,16 +286,26 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.alarm),
-                        label: const Text('Remind Me'),
-                        onPressed: () {
-                          // Simulation for local notifications
-                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Reminder set for 1 hour before event'),
-                              backgroundColor: AppColors.success,
-                            ),
+                      child: Consumer<ProfileController>(
+                        builder: (context, profileController, _) {
+                          final isAdded = profileController.profile?.calendarEventIds.contains(event.id) ?? false;
+                          return OutlinedButton.icon(
+                            icon: Icon(isAdded ? Icons.calendar_month : Icons.calendar_month_outlined, size: 18),
+                            label: Text(isAdded ? 'In Calendar' : 'Add to Calendar', style: const TextStyle(fontSize: 12)),
+                            onPressed: () {
+                              if (!isAdded) {
+                                final eventToAdd = Event(
+                                  title: event.title,
+                                  description: event.description ?? 'Event from EventSphere',
+                                  location: event.location,
+                                  startDate: event.startTime,
+                                  endDate: event.endTime,
+                                  allDay: false,
+                                );
+                                Add2Calendar.addEvent2Cal(eventToAdd);
+                              }
+                              profileController.toggleCalendarEvent(event.id);
+                            },
                           );
                         },
                       ),
@@ -418,6 +437,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     child: Text(_isRegistered ? 'View Ticket' : 'Register for Event'),
                   ),
                 ),
+                const SizedBox(height: 32),
+
+                // Reviews
+                ReviewsWidget(eventId: event.id),
+                const SizedBox(height: 100), // Padding for bottom navbar
               ],
             ),
           ),

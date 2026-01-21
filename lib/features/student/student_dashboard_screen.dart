@@ -15,9 +15,12 @@ import '../../widgets/app_drawer.dart';
 import '../profile/logic/profile_controller.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/constants/app_constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
-  const StudentDashboardScreen({super.key});
+  final VoidCallback? onOpenDrawer;
+
+  const StudentDashboardScreen({super.key, this.onOpenDrawer});
 
   @override
   State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
@@ -43,7 +46,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   void _startAutoScroll() {
     _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
-      if (_currentPage < 4) {
+      if (!mounted) return;
+      
+      final controller = context.read<EventController>();
+      final bannerAds = controller.events
+          .where((e) => e.promotionStatus == 'approved')
+          .take(5)
+          .toList();
+
+      if (bannerAds.isEmpty) return;
+
+      if (_currentPage < bannerAds.length - 1) {
         _currentPage++;
       } else {
         _currentPage = 0;
@@ -88,13 +101,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   
                   return GestureDetector(
                     onTap: () {
-                      Scaffold.of(context).openEndDrawer();
+                      if (widget.onOpenDrawer != null) {
+                        widget.onOpenDrawer!();
+                      } else {
+                        Scaffold.of(context).openEndDrawer();
+                      }
                     },
                     child: CircleAvatar(
                       radius: 20,
                       backgroundColor: Colors.grey.shade200,
                       backgroundImage: hasImage
-                          ? NetworkImage(profile!.profilePhotoUrl!)
+                          ? CachedNetworkImageProvider(profile!.profilePhotoUrl!)
                           : null,
                       child: !hasImage
                           ? const Icon(Icons.person, color: Colors.grey)
@@ -106,7 +123,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
           ],
         ),
-        endDrawer: const AppDrawer(),
+        // endDrawer: const AppDrawer(), // Moved to StudentHome
         body: Consumer<EventController>(
           builder: (context, controller, _) {
             if (controller.isLoading) {
@@ -114,7 +131,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             }
 
             final events = controller.events;
-            final featuredEvents = events.take(5).toList();
+            final bannerAds = events.where((e) => e.promotionStatus == 'approved').take(5).toList();
+            final featuredGridEvents = events.take(6).toList();
 
             return SingleChildScrollView(
               child: Column(
@@ -169,41 +187,43 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     )
                   else ...[
                     // Rolling Banner
-                    SizedBox(
-                      height: 200,
-                      child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentPage = index;
-                        });
-                      },
-                      itemCount: featuredEvents.length,
-                      itemBuilder: (context, index) {
-                        return _BannerCard(event: featuredEvents[index]);
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Page Indicators
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      featuredEvents.length,
-                      (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentPage == index
-                              ? Theme.of(context).primaryColor
-                              : Colors.grey.shade300,
+                    if (bannerAds.isNotEmpty) ...[
+                      SizedBox(
+                        height: 200,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentPage = index;
+                            });
+                          },
+                          itemCount: bannerAds.length,
+                          itemBuilder: (context, index) {
+                            return _BannerCard(event: bannerAds[index]);
+                          },
                         ),
                       ),
-                    ),
-                  ),
+                      const SizedBox(height: 8),
+                  
+                      // Page Indicators
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          bannerAds.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentPage == index
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
 
                   const SizedBox(height: 24),
 
@@ -265,9 +285,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
                     ),
-                    itemCount: featuredEvents.length,
+                    itemCount: featuredGridEvents.length,
                     itemBuilder: (context, index) {
-                      final event = featuredEvents[index];
+                      final event = featuredGridEvents[index];
                       return EventCard(
                         title: event.title,
                         organization: event.organizationName,
@@ -321,7 +341,7 @@ class _BannerCard extends StatelessWidget {
           color: Theme.of(context).primaryColor.withOpacity(0.1),
           image: (event.posterUrl != null && event.posterUrl!.isNotEmpty)
               ? DecorationImage(
-                  image: NetworkImage(event.posterUrl!),
+                  image: CachedNetworkImageProvider(event.posterUrl!),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.3),

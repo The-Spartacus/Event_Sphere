@@ -23,6 +23,7 @@ class UserProfileModel {
   final List<String> subscribedOrgIds;
   final Map<String, DateTime> subscriptionTimestamps; // New field to track subscription time
   final List<String> bookmarkedEventIds;
+  final List<String> calendarEventIds;
 
   // Organization-specific fields
   final String? organizationName; // Required for orgs (same as name)
@@ -33,6 +34,11 @@ class UserProfileModel {
   final String? contactPersonPhone;
   final String? logoUrl;
   final bool? verified; // Read-only, set by admin
+  
+  // Location fields
+  final double? latitude;
+  final double? longitude;
+  final bool isLocationSet;
 
   // Metadata
   final DateTime? updatedAt;
@@ -60,6 +66,10 @@ class UserProfileModel {
     this.subscribedOrgIds = const [],
     this.subscriptionTimestamps = const {}, 
     this.bookmarkedEventIds = const [],
+    this.calendarEventIds = const [],
+    this.latitude,
+    this.longitude,
+    this.isLocationSet = false,
   });
 
   /// Create UserProfileModel from Firestore document
@@ -106,6 +116,12 @@ class UserProfileModel {
       bookmarkedEventIds: data['bookmarkedEventIds'] != null
           ? List<String>.from(data['bookmarkedEventIds'])
           : [],
+      calendarEventIds: data['calendarEventIds'] != null
+          ? List<String>.from(data['calendarEventIds'])
+          : [],
+      latitude: data['latitude']?.toDouble(),
+      longitude: data['longitude']?.toDouble(),
+      isLocationSet: data['isLocationSet'] ?? false,
     );
   }
 
@@ -119,6 +135,10 @@ class UserProfileModel {
       'subscribedOrgIds': subscribedOrgIds,
       'subscriptionTimestamps': subscriptionTimestamps,
       'bookmarkedEventIds': bookmarkedEventIds,
+      'calendarEventIds': calendarEventIds,
+      'latitude': latitude,
+      'longitude': longitude,
+      'isLocationSet': isLocationSet,
     };
 
     // Add role-specific fields based on role
@@ -165,6 +185,10 @@ class UserProfileModel {
     List<String>? subscribedOrgIds,
     Map<String, DateTime>? subscriptionTimestamps,
     List<String>? bookmarkedEventIds,
+    List<String>? calendarEventIds,
+    double? latitude,
+    double? longitude,
+    bool? isLocationSet,
   }) {
     return UserProfileModel(
       uid: uid, // Immutable
@@ -190,6 +214,10 @@ class UserProfileModel {
       subscribedOrgIds: subscribedOrgIds ?? this.subscribedOrgIds,
       subscriptionTimestamps: subscriptionTimestamps ?? this.subscriptionTimestamps,
       bookmarkedEventIds: bookmarkedEventIds ?? this.bookmarkedEventIds,
+      calendarEventIds: calendarEventIds ?? this.calendarEventIds,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isLocationSet: isLocationSet ?? this.isLocationSet,
     );
   }
 

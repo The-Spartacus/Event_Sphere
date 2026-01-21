@@ -4,12 +4,12 @@ import 'package:provider/provider.dart';
 import '../../core/services/auth_service.dart';
 import '../../app/routes.dart';
 import '../events/presentation/event_list_screen.dart';
-import '../certificates/certificate_vault_screen.dart';
-import '../certificates/certificate_vault_screen.dart';
 import 'student_dashboard_screen.dart';
 import 'my_events_screen.dart';
+import '../certificates/certificate_vault_screen.dart';
 
-import '../../widgets/glass_bottom_nav_bar.dart';
+import '../../widgets/custom_floating_navbar.dart';
+import '../../widgets/app_drawer.dart';
 
 class StudentHome extends StatefulWidget {
   const StudentHome({super.key});
@@ -20,9 +20,13 @@ class StudentHome extends StatefulWidget {
 
 class _StudentHomeState extends State<StudentHome> {
   int _index = 0;
+  bool _isDrawerOpen = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final _pages = [
-    const StudentDashboardScreen(),
+  List<Widget> get _pages => [
+    StudentDashboardScreen(
+      onOpenDrawer: () => _scaffoldKey.currentState?.openEndDrawer(),
+    ),
     const EventListScreen(),
     const MyEventsScreen(),
     const CertificateVaultScreen(),
@@ -31,36 +35,46 @@ class _StudentHomeState extends State<StudentHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       extendBody: true,
+      endDrawer: const AppDrawer(),
+      onEndDrawerChanged: (isOpen) {
+        setState(() {
+          _isDrawerOpen = isOpen;
+        });
+      },
       body: _pages[_index],
-      bottomNavigationBar: GlassBottomNavBar(
-        currentIndex: _index,
-        onTap: (i) {
-          setState(() => _index = i);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event_outlined),
-            activeIcon: Icon(Icons.event),
-            label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event_available_outlined),
-            activeIcon: Icon(Icons.event_available),
-            label: 'My Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.workspace_premium_outlined),
-            activeIcon: Icon(Icons.workspace_premium),
-            label: 'Certificates',
-          ),
-        ],
-      ),
+      bottomNavigationBar: _isDrawerOpen 
+          ? null 
+          : CustomFloatingNavBar(
+              currentIndex: _index,
+              onTap: (i) {
+                setState(() => _index = i);
+              },
+              onActionButtonTap: null, // Removed notification icon
+              items: [
+                CustomNavBarItem(
+                  icon: Icons.dashboard_outlined,
+                  activeIcon: Icons.dashboard,
+                  label: 'Home',
+                ),
+                CustomNavBarItem(
+                  icon: Icons.event_outlined,
+                  activeIcon: Icons.event,
+                  label: 'Events',
+                ),
+                CustomNavBarItem(
+                  icon: Icons.event_available_outlined,
+                  activeIcon: Icons.event_available,
+                  label: 'My Events',
+                ),
+                CustomNavBarItem(
+                  icon: Icons.workspace_premium_outlined,
+                  activeIcon: Icons.workspace_premium,
+                  label: 'Certificates',
+                ),
+              ],
+            ),
     );
   }
 

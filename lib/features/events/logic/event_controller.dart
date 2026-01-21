@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-import '../data/event_model.dart';
-import '../data/event_repository.dart';
+import 'package:event_sphere/features/events/data/event_model.dart';
+import 'package:event_sphere/features/events/data/event_repository.dart';
 
 class EventController extends ChangeNotifier {
   final EventRepository _repository;
@@ -23,6 +24,10 @@ class EventController extends ChangeNotifier {
   DateTime? _startDate;
   DateTime? _endDate;
   String? _organizationName;
+  
+  // Location
+  double? _userLat;
+  double? _userLng;
 
   StreamSubscription<List<EventModel>>? _subscription;
 
@@ -35,6 +40,14 @@ class EventController extends ChangeNotifier {
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
   String? get organizationName => _organizationName;
+  bool get isLocationSet => _userLat != null && _userLng != null;
+
+  /// Update user location for nearby sorting
+  void setUserLocation(double? lat, double? lng) {
+    _userLat = lat;
+    _userLng = lng;
+    _refilter();
+  }
 
   /// Load all approved events
   void loadEvents() {
@@ -260,9 +273,7 @@ class EventController extends ChangeNotifier {
       }).toList();
     }
 
-    // Sort: Promoted events first, then by date logic
-    // Actually, streamApprovedEvents orders by date.
-    // We want promoted events at the TOP.
+    // Sort: Promoted events first, then distance or date
     _filteredEvents.sort((a, b) {
       final aPromoted = a.promotionStatus == 'approved';
       final bPromoted = b.promotionStatus == 'approved';
@@ -270,12 +281,30 @@ class EventController extends ChangeNotifier {
       if (aPromoted && !bPromoted) return -1;
       if (!aPromoted && bPromoted) return 1;
       
-      // Keep original date order (assuming they were sorted by date)
-      // Since sort is stable or we can rely on index if needed, but here simple comparison is enough.
+      // If location is set, sort by distance after promotions
+      if (_userLat != null && _userLng != null) {
+        if (a.latitude != null && a.longitude != null && b.latitude != null && b.longitude != null) {
+          final distA = _calculateDistance(_userLat!, _userLng!, a.latitude!, a.longitude!);
+          final distB = _calculateDistance(_userLat!, _userLng!, b.latitude!, b.longitude!);
+          return distA.compareTo(distB);
+        }
+        if (a.latitude != null) return -1;
+        if (b.latitude != null) return 1;
+      }
+
       return a.date.compareTo(b.date);
     });
 
     notifyListeners();
+  }
+
+  /// Haversine formula to calculate distance in km
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double p = 0.017453292519943295;
+    final double a = 0.5 - math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) * math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) / 2;
+    return 12742 * math.asin(math.sqrt(a));
   }
 
   @override
@@ -285,4 +314,3 @@ class EventController extends ChangeNotifier {
     super.dispose();
   }
 }
-  

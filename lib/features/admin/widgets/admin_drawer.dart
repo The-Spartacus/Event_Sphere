@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'package:event_sphere/features/profile/logic/profile_controller.dart';
-import 'package:event_sphere/core/theme/theme_provider.dart';
-import 'package:event_sphere/core/services/auth_service.dart';
-import 'package:event_sphere/app/routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+import '../../../core/services/auth_service.dart';
+import '../../../app/routes.dart';
+import '../../profile/logic/profile_controller.dart';
+import '../../../core/theme/theme_provider.dart';
+
+class AdminDrawer extends StatelessWidget {
+  final Function(int)? onTabSelect;
+
+  const AdminDrawer({super.key, this.onTabSelect});
 
   @override
   Widget build(BuildContext context) {
+    // If onTabSelect provided, we highlight based on index? 
+    // Wait, AdminHome manages index. AdminDrawer doesn't know _index unless passed.
+    // For now, let's just use onTabSelect to navigate.
+    
+    // We can use currentRoute logic for selection if onTabSelect is NULL.
+    // If onTabSelect IS provided, we assume we are in AdminHome Tabs.
+    // But how do we know which tab is selected? 
+    // Maybe pass `selectedIndex` too? 
+    // Let's keep it simple: Just allow navigation. Highlight is bonus.
+    
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
     return Drawer(
       child: Consumer2<ProfileController, ThemeProvider>(
         builder: (context, profileController, themeProvider, _) {
@@ -19,14 +33,8 @@ class AppDrawer extends StatelessWidget {
           final hasImage = profile?.profilePhotoUrl != null &&
               profile!.profilePhotoUrl!.isNotEmpty;
           
-          String displayName = 'User';
-          String displayEmail = '';
-          
-          if (profile != null) {
-            displayName = profile.name.isNotEmpty ? profile.name : 
-               (profile.organizationName?.isNotEmpty == true ? profile.organizationName! : 'User');
-            displayEmail = profile.email;
-          }
+          final displayName = profile?.name.isNotEmpty == true ? profile!.name : 'Admin';
+          final displayEmail = profile?.email ?? 'admin@eventsphere.com';
 
           return ListView(
             padding: EdgeInsets.zero,
@@ -40,87 +48,77 @@ class AppDrawer extends StatelessWidget {
                       ? CachedNetworkImageProvider(profile!.profilePhotoUrl!)
                       : null,
                   child: !hasImage
-                      ? const Icon(Icons.person, size: 40, color: Colors.grey)
+                      ? const Icon(Icons.shield, size: 40, color: Colors.grey)
                       : null,
                 ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColor,
                 ),
               ),
-              
+
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text('Account', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                child: Text('Administration', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
               ),
               
               ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: const Text('Manage your profile'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                leading: const Icon(Icons.dashboard_outlined),
+                title: const Text('Dashboard'),
+                selected: currentRoute == AppRoutes.adminHome,
+                selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                selectedColor: Theme.of(context).primaryColor,
                 onTap: () {
-                  Navigator.pop(context); 
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.editProfile,
-                    arguments: profile?.role,
-                  );
+                  Navigator.pop(context);
+                  if (onTabSelect != null) {
+                    onTabSelect!(0);
+                  } else if (currentRoute != AppRoutes.adminHome) {
+                    Navigator.pushReplacementNamed(context, AppRoutes.adminHome);
+                  }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.lock_outline),
-                title: const Text('Password & Security'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                leading: const Icon(Icons.verified_user_outlined),
+                title: const Text('Verify Organizations'),
+                selected: currentRoute == AppRoutes.verifyOrg,
+                selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                selectedColor: Theme.of(context).primaryColor,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.pushNamed(context, AppRoutes.changePassword);
-                },
-              ),
-
-              ListTile(
-                leading: const Icon(Icons.favorite_border),
-                title: const Text('Saved Events'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, AppRoutes.savedEvents);
+                  if (onTabSelect != null) {
+                    onTabSelect!(1);
+                  } else if (currentRoute != AppRoutes.verifyOrg) {
+                    Navigator.pushReplacementNamed(context, AppRoutes.verifyOrg);
+                  }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.card_membership_outlined),
-                title: const Text('My Certificates'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                leading: const Icon(Icons.campaign_outlined),
+                title: const Text('Ad Requests'),
+                selected: currentRoute == AppRoutes.adApproval,
+                selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                selectedColor: Theme.of(context).primaryColor,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.pushNamed(context, AppRoutes.certificates);
+                  if (onTabSelect != null) {
+                    onTabSelect!(2);
+                  } else if (currentRoute != AppRoutes.adApproval) {
+                    Navigator.pushReplacementNamed(context, AppRoutes.adApproval);
+                  }
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.notifications_none),
-                title: const Text('Notifications'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                leading: const Icon(Icons.analytics_outlined),
+                title: const Text('Analytics'),
+                selected: currentRoute == AppRoutes.analytics,
+                selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                selectedColor: Theme.of(context).primaryColor,
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon')),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: const Text('Language'),
-                trailing: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('English', style: TextStyle(color: Colors.grey)),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon')),
-                  );
+                  if (onTabSelect != null) {
+                    onTabSelect!(3);
+                  } else if (currentRoute != AppRoutes.analytics) {
+                    Navigator.pushReplacementNamed(context, AppRoutes.analytics);
+                  }
                 },
               ),
 
@@ -130,17 +128,6 @@ class AppDrawer extends StatelessWidget {
                 child: Text('Preferences', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
               ),
 
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('About Us'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon')),
-                  );
-                },
-              ),
               SwitchListTile(
                 secondary: Icon(themeProvider.isDarkMode
                     ? Icons.dark_mode_outlined
@@ -153,16 +140,7 @@ class AppDrawer extends StatelessWidget {
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.location_on_outlined),
-                title: const Text('Location'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, AppRoutes.locationPicker);
-                },
-              ),
-              
+
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
@@ -187,7 +165,6 @@ class AppDrawer extends StatelessWidget {
                             Navigator.pop(context); // Close dialog
                             final authService = context.read<AuthService>();
                             await authService.logout();
-                            
                             if (!context.mounted) return;
                             Navigator.pushNamedAndRemoveUntil(
                               context,

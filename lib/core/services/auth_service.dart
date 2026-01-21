@@ -152,8 +152,6 @@ class AuthService {
   Future<void> logout() async {
     await _auth.signOut();
   }
-
-  /// Fetch role from Firestore
   Future<String?> getUserRole(String uid) async {
     final snapshot = await _firestore
         .collection(ApiEndpoints.users)

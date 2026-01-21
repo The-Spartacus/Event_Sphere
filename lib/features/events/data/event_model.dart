@@ -32,6 +32,10 @@ class EventModel {
   final DateTime? registrationDeadline;
   final int views;
   final List<String> interestedUserIds;
+  
+  // Location coordinates
+  final double? latitude;
+  final double? longitude;
 
   // Promotion/Ad Features
   final String promotionStatus; // none, pending, approved, rejected
@@ -67,6 +71,8 @@ class EventModel {
     this.interestedUserIds = const [],
     this.promotionStatus = 'none',
     this.promotionTarget = 'none',
+    this.latitude,
+    this.longitude,
   });
 
   factory EventModel.fromDoc(
@@ -125,6 +131,8 @@ class EventModel {
           : [],
       promotionStatus: data['promotionStatus'] ?? 'none',
       promotionTarget: data['promotionTarget'] ?? 'none',
+      latitude: data['latitude']?.toDouble(),
+      longitude: data['longitude']?.toDouble(),
     );
   }
 
@@ -159,6 +167,8 @@ class EventModel {
       'interestedUserIds': interestedUserIds,
       'promotionStatus': promotionStatus,
       'promotionTarget': promotionTarget,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 
@@ -188,6 +198,8 @@ class EventModel {
     List<String>? interestedUserIds,
     String? promotionStatus,
     String? promotionTarget,
+    double? latitude,
+    double? longitude,
   }) {
     return EventModel(
       id: id,
@@ -218,6 +230,8 @@ class EventModel {
       interestedUserIds: interestedUserIds ?? this.interestedUserIds,
       promotionStatus: promotionStatus ?? this.promotionStatus,
       promotionTarget: promotionTarget ?? this.promotionTarget,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
   }
 }

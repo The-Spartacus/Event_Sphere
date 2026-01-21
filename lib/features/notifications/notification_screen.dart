@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../events/logic/event_controller.dart';
 import '../events/data/event_repository.dart';
 import '../../core/theme/text_styles.dart';
+import '../../app/routes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
@@ -43,7 +45,7 @@ class NotificationScreen extends StatelessWidget {
                   leading: CircleAvatar(
                     backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
                     backgroundImage: event.posterUrl != null 
-                        ? NetworkImage(event.posterUrl!) 
+                        ? CachedNetworkImageProvider(event.posterUrl!) 
                         : null,
                     child: event.posterUrl == null 
                         ? const Icon(Icons.event_note) 
@@ -78,10 +80,11 @@ class NotificationScreen extends StatelessWidget {
                     // Navigate to event details
                      Navigator.pushNamed(
                       context,
-                      '/events/details', // Hardcoded or use AppRoutes if imported
+                      AppRoutes.eventDetails,
                       arguments: event.id,
                     );
                   },
+
                 );
               },
             );

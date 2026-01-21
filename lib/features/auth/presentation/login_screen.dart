@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/auth_service.dart';
 import '../../profile/logic/profile_controller.dart';
-import '../../../core/theme/text_styles.dart';
 import '../../../core/theme/colors.dart';
 import '../../../app/routes.dart';
-import '../../../app/app_config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,6 +22,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _emailController.text = prefs.getString('remembered_email') ?? '';
+      _passwordController.text = prefs.getString('remembered_password') ?? '';
+      _rememberMe = prefs.getBool('remember_me') ?? false;
+    });
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('remembered_email', _emailController.text.trim());
+      await prefs.setString('remembered_password', _passwordController.text.trim());
+      await prefs.setBool('remember_me', true);
+    } else {
+      await prefs.remove('remembered_email');
+      await prefs.remove('remembered_password');
+      await prefs.setBool('remember_me', false);
+    }
+  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -36,6 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      await _saveCredentials();
 
       final state = await authService.checkAuthState();
 
@@ -210,20 +240,51 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                // TODO: Implement Forgot Password
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Forgot Password not implemented yet')),
-                                );
-                              },
-                              child: const Text('Forgot Password?'),
-                            ),
+                          const SizedBox(height: 8),
+                          
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Checkbox(
+                                  value: _rememberMe,
+                                  onChanged: (value) => setState(() => _rememberMe = value ?? false),
+                                  activeColor: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Flexible(
+                                child: Text(
+                                  'Remember Me',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              TextButton(
+                                onPressed: () {
+                                  // TODO: Implement Forgot Password
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Forgot Password not implemented yet')),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(50, 30),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
 
                           // Login Button
                           SizedBox(

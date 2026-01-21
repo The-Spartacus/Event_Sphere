@@ -191,6 +191,40 @@ class ProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggle calendar event (added to calendar)
+  void toggleCalendarEvent(String eventId) {
+    if (_profile == null) return;
+
+    final currentCalendar = List<String>.from(_profile!.calendarEventIds);
+    if (currentCalendar.contains(eventId)) {
+      currentCalendar.remove(eventId);
+    } else {
+      currentCalendar.add(eventId);
+    }
+
+    _profile = _profile!.copyWith(calendarEventIds: currentCalendar);
+    _hasChanges = true;
+    
+    // Auto-save for interaction events
+    saveProfile();
+    notifyListeners();
+  }
+
+  /// Update user location
+  void updateLocation(double lat, double lng) {
+    if (_profile == null) return;
+
+    _profile = _profile!.copyWith(
+      latitude: lat,
+      longitude: lng,
+      isLocationSet: true,
+    );
+    _hasChanges = true;
+    
+    saveProfile();
+    notifyListeners();
+  }
+
   /// Save profile changes to Firestore
   Future<void> saveProfile() async {
     if (_profile == null) {

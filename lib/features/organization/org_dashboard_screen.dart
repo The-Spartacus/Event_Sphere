@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/theme_provider.dart';
 import '../profile/logic/profile_controller.dart';
-import '../../widgets/app_drawer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/services/auth_service.dart';
 import '../../core/theme/text_styles.dart';
@@ -13,7 +13,9 @@ import '../../app/routes.dart';
 import '../../app/app_config.dart';
 
 class OrgDashboardScreen extends StatelessWidget {
-  const OrgDashboardScreen({super.key});
+  final VoidCallback? onOpenDrawer;
+
+  const OrgDashboardScreen({super.key, this.onOpenDrawer});
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +42,17 @@ class OrgDashboardScreen extends StatelessWidget {
                 
                 return GestureDetector(
                   onTap: () {
-                    Scaffold.of(context).openEndDrawer();
+                    if (onOpenDrawer != null) {
+                      onOpenDrawer!();
+                    } else {
+                      Scaffold.of(context).openEndDrawer();
+                    }
                   },
                   child: CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: hasImage
-                        ? NetworkImage(profile!.profilePhotoUrl!)
+                        ? CachedNetworkImageProvider(profile!.profilePhotoUrl!)
                         : null,
                     child: !hasImage
                         ? const Icon(Icons.person, color: Colors.grey)
@@ -58,7 +64,7 @@ class OrgDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      endDrawer: const AppDrawer(),
+      // endDrawer: const AppDrawer(), // Moved to OrgHome
       body: Padding(
         padding: const EdgeInsets.all(AppConfig.defaultPadding),
         child: Column(

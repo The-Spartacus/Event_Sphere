@@ -167,5 +167,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    /* =========================
+       REVIEWS (Subcollection of Events)
+    ========================= */
+    match /events/{eventId}/reviews/{reviewId} {
+      allow read: if isLoggedIn();
+      allow create: if isStudent() && request.resource.data.userId == request.auth.uid;
+      allow update: if isLoggedIn() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow delete: if isAdmin();
+    }
   }
 }
